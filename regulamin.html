@@ -1,3 +1,4 @@
+<!-- regulamin.html -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -17,54 +18,39 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: var(--portal-bg); color: var(--portal-text); line-height: 1.6; }
-        header { background-color: var(--portal-dark); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--portal-primary); }
+        header { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; text-align: center; border-bottom: 4px solid var(--portal-primary); }
+        header h1 { font-size: 28px; color: var(--portal-dark); text-transform: uppercase; }
+        header h1 span { color: var(--portal-primary); }
         .container { max-width: 900px; margin: 30px auto; background: var(--portal-card); padding: 40px; border-radius: var(--portal-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--portal-border); }
-        h1 { font-size: 28px; color: var(--portal-dark); margin-bottom: 20px; text-transform: uppercase; }
-        h2 { font-size: 18px; color: var(--portal-primary); margin-top: 25px; margin-bottom: 10px; text-transform: uppercase; }
-        p, ul { font-size: 14px; color: #4b5563; margin-bottom: 15px; }
+        h2 { font-size: 20px; color: var(--portal-dark); margin-top: 25px; margin-bottom: 12px; text-transform: uppercase; border-left: 4px solid var(--portal-primary); padding-left: 10px; }
+        p, ul { font-size: 15px; color: #4b5563; margin-bottom: 15px; }
         ul { padding-left: 20px; }
         li { margin-bottom: 8px; }
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--portal-primary); font-weight: 700; text-decoration: none; text-transform: uppercase; font-size: 13px; }
         .back-link:hover { text-decoration: underline; }
-        footer { text-align: center; padding: 20px; font-size: 12px; color: var(--portal-gray); }
+        footer { text-align: center; padding: 20px; font-size: 13px; color: var(--portal-gray); margin-top: 40px; }
     </style>
 </head>
 <body>
     <header>
-        <h1>NowinyInfo - Regulamin Serwisu</h1>
+        <h1>Nowiny<span>Info</span> - Regulamin Serwisu</h1>
     </header>
     <div class="container">
-        <a class="back-link" href="index.html">&larr; Wróć do portalu</a>
+        <a href="index.html" class="back-link">&larr; Wróć do portalu</a>
         
-        <h2>§ 1. Postanowienia ogólne</h2>
-        <p>1. Niniejszy regulamin określa ogólne zasady korzystania z regionalnego portalu informacyjnego NowinyInfo, hostowanego w ramach platformy GitHub Pages.</p>
-        <p>2. Właścicielem i administratorem portalu jest redakcja serwisu NowinyInfo.</p>
-        <p>3. Korzystanie z portalu, w tym przeglądanie treści, dodawanie komentarzy oraz logowanie do panelu redaktorskiego, oznacza pełną akceptację postanowień niniejszego regulaminu.</p>
+        <h2>1. Postanowienia ogólne</h2>
+        <p>Niniejszy regulamin określa ogólne zasady korzystania z regionalnego serwisu informacyjnego NowinyInfo, prawa i obowiązki użytkowników oraz redakcji.</p>
 
-        <h2>§ 2. Rodzaje i zakres usług elektronicznych</h2>
-        <p>1. Portal świadczy usługi drogą elektroniczną polegające na:</p>
-        <ul>
-            <li>Udostępnianiu treści redakcyjnych, artykułów i wiadomości regionalnych oraz biznesowych.</li>
-            <li>Umożliwieniu użytkownikom interakcji poprzez system komentarzy oraz system zgłaszania naruszeń.</li>
-            <li>Udostępnianiu autoryzowanego panelu redaktorskiego służącego do publikacji i zarządzania artykułami.</li>
-            <li>Prezentacji danych pogodowych opartych o zewnętrzne API meteorologiczne.</li>
-        </ul>
+        <h2>2. Korzystanie z serwisu i analityka</h2>
+        <p>Przeglądanie treści zawartych w portalu jest ogólnodostępne. W celu optymalizacji działania serwisu oraz zbierania anonimowych danych statystycznych, na stronie wykorzystywane są narzędzia analityczne zewnętrznych dostawców, w tym <b>Google Analytics</b> oraz <b>Google Tag</b>.</p>
+        <p>Korzystając z portalu, Użytkownik wyraża zgodę na rejestrowanie jego ruchu na stronie za pomocą wyżej wymienionych skryptów analitycznych zgodnie z Polityką Prywatności.</p>
 
-        <h2>§ 3. Warunki świadczenia usług i publikacji treści</h2>
-        <p>1. Użytkownik zobowiązany jest do korzystania z portalu w sposób zgodny z prawem, postanowieniami regulaminu oraz dobrymi obyczajami.</p>
-        <p>2. Zabrania się publikowania w sekcji komentarzy oraz artykułach treści bezprawnych, wulgarnych, obraźliwych, nawołujących do nienawiści, naruszających dobra osobiste osób trzecich oraz stanowiących spam.</p>
-        <p>3. Redakcja zastrzega sobie pełne prawo do modyfikowania, edycji lub usuwania dowolnych komentarzy oraz artykułów naruszających prawo lub postanowienia niniejszego regulaminu.</p>
+        <h2>3. Komentarze i treści użytkowników</h2>
+        <p>Użytkownicy mają możliwość dodawania komentarzy pod artykułami. Zabrania się publikowania treści wulgarnych, obraźliwych, naruszających prawo, szerzących mowę nienawiści oraz spamu. Redakcja zastrzega sobie prawo do usuwania naruszających regulamin komentarzy oraz zgłaszania nadużyć.</p>
 
-        <h2>§ 4. Własność intelektualna</h2>
-        <p>1. Wszelkie treści, artykuły, materiały graficzne i układ strony publikowane w serwisie NowinyInfo podlegają ochronie prawnautsorskiej.</p>
-        <p>2. Kopiowanie, modyfikowanie lub rozpowszechnianie materiałów z portalu bez uprzedniej zgody redakcji jest zabronione.</p>
-
-        <h2>§ 5. Postanowienia końcowe</h2>
-        <p>1. Regulamin wchodzi w życie z dniem publikacji w serwisie.</p>
-        <p>2. Redakcja zastrzega sobie prawo do wprowadzania zmian w regulaminie w dowolnym czasie.</p>
+        <h2>4. Odpowiedzialność</h2>
+        <p>Redakcja dokłada wszelkich starań, aby publikowane informacje były rzetelne i aktualne, jednak nie ponosi odpowiedzialności za skutki wykorzystania materiałów zamieszczonych na łamach portalu.</p>
     </div>
-    <footer>
-        &copy; 2026 NowinyInfo. Wszelkie prawa zastrzeżone.
-    </footer>
+    <footer>&copy; 2026 NowinyInfo. Wszelkie prawa zastrzeżone.</footer>
 </body>
 </html>
