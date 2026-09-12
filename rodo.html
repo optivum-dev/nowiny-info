@@ -1,3 +1,4 @@
+<!-- rodo.html -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -17,57 +18,44 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: var(--portal-bg); color: var(--portal-text); line-height: 1.6; }
-        header { background-color: var(--portal-dark); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--portal-primary); }
+        header { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; text-align: center; border-bottom: 4px solid var(--portal-primary); }
+        header h1 { font-size: 28px; color: var(--portal-dark); text-transform: uppercase; }
+        header h1 span { color: var(--portal-primary); }
         .container { max-width: 900px; margin: 30px auto; background: var(--portal-card); padding: 40px; border-radius: var(--portal-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--portal-border); }
-        h1 { font-size: 28px; color: var(--portal-dark); margin-bottom: 20px; text-transform: uppercase; }
-        h2 { font-size: 18px; color: var(--portal-primary); margin-top: 25px; margin-bottom: 10px; text-transform: uppercase; }
-        p, ul { font-size: 14px; color: #4b5563; margin-bottom: 15px; }
+        h2 { font-size: 20px; color: var(--portal-dark); margin-top: 25px; margin-bottom: 12px; text-transform: uppercase; border-left: 4px solid var(--portal-primary); padding-left: 10px; }
+        p, ul { font-size: 15px; color: #4b5563; margin-bottom: 15px; }
         ul { padding-left: 20px; }
         li { margin-bottom: 8px; }
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--portal-primary); font-weight: 700; text-decoration: none; text-transform: uppercase; font-size: 13px; }
         .back-link:hover { text-decoration: underline; }
-        footer { text-align: center; padding: 20px; font-size: 12px; color: var(--portal-gray); }
+        footer { text-align: center; padding: 20px; font-size: 13px; color: var(--portal-gray); margin-top: 40px; }
     </style>
 </head>
 <body>
     <header>
-        <h1>NowinyInfo - Klauzula Informacyjna RODO</h1>
+        <h1>Nowiny<span>Info</span> - Ochrona Danych Osobowych (RODO)</h1>
     </header>
     <div class="container">
-        <a class="back-link" href="index.html">&larr; Wróć do portalu</a>
-        
-        <h2>1. Tożsamości administratora</h2>
-        <p>Zgodnie z rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679 (RODO), administratorem danych osobowych gromadzonych w ramach serwisu NowinyInfo jest Redakcja Portalu.</p>
+        <main>
+            <a href="index.html" class="back-link">&larr; Wróć do portalu</a>
+            
+            <h2>1. Klauzula informacyjna RODO</h2>
+            <p>Zgodnie z Rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679 (RODO) informujemy, że administratorem danych osobowych zbieranych w ramach serwisu NowinyInfo jest redakcja portalu.</p>
 
-        <h2>2. Cele oraz podstawy prawne przetwarzania</h2>
-        <p>Państwa dane osobowe przetwarzane są w oparciu o następujące podstawy:</p>
-        <ul>
-            <li><b>Art. 6 ust. 1 lit. b RODO</b> – w celu realizacji procesów związanych z rejestracją, utrzymaniem konta redaktora oraz publikacją materiałów w serwisie.</li>
-            <li><b>Art. 6 ust. 1 lit. f RODO</b> – prawnie uzasadniony interes administratora polegający na zapewnieniu bezpieczeństwa działania aplikacji, moderacji treści w sekcji komentarzy oraz rozpatrywaniu zgłoszeń.</li>
-        </ul>
+            <h2>2. Cele i podstawy prawne przetwarzania danych (w tym Google Analytics i Google Tag)</h2>
+            <p>Dane osobowe oraz dane eksploatacyjne użytkowników mogą być przetwarzane w następujących celach:</p>
+            <ul>
+                <li><b>Obsługa kont redaktorów i systemu komentarzy:</b> na podstawie zgody użytkownika oraz w celu realizacji usług portalu.</li>
+                <li><b>Analiza statystyczna ruchu i pomiar efektywności strony:</b> za pomocą narzędzi takich jak <b>Google Analytics</b> oraz skryptów zarządzanych przez <b>Google Tag</b>. Przetwarzanie to opiera się na prawnie uzasadnionym interesie administratora (art. 6 ust. 1 lit. f RODO) polegającym na prowadzeniu statystyk i ulepszaniu funkcjonalności serwisu.</li>
+            </ul>
 
-        <h2>3. Odbiorcy danych osobowych</h2>
-        <p>Ze względu na specyfikę technologiczną hostingu, dane są powierzane podmiotom zapewniającym infrastrukturę systemową i bazodanową:</p>
-        <ul>
-            <li><b>GitHub Inc.</b> – w zakresie hostingu statycznego kodu oraz plików strony (GitHub Pages).</li>
-            <li><b>Google LLC / Firebase</b> – w zakresie utrzymania bazy danych Firestore oraz mechanizmów zapisu wpisów i komentarzy.</li>
-        </ul>
+            <h2>3. Odbiorcy danych</h2>
+            <p>W związku z korzystaniem z narzędzi analitycznych, dane zbierane przez pliki cookies (takie jak adres IP w zanonimizowanej formie czy dane o interakcjach ze stroną) mogą być przekazywane dostawcy usług analitycznych – Google LLC, z zachowaniem standardów bezpieczeństwa i prywatności.</p>
 
-        <h2>4. Prawa osób, których dane dotyczą</h2>
-        <p>W związku z przetwarzaniem danych przysługują Państwu następujące prawa:</p>
-        <ul>
-            <li>Prawo dostępu do swoich danych osobowych oraz żądania ich kopii.</li>
-            <li>Prawo do sprostowania (poprawiania) swoich danych.</li>
-            <li>Prawo do usunięcia danych („prawo do bycia zapomnianym”) lub ograniczenia ich przetwarzania.</li>
-            <li>Prawo do wniesienia sprzeciwu wobec przetwarzania danych.</li>
-            <li>Prawo do wniesienia skargi do organu nadzorczego (Prezesa Urzędu Ochrony Danych Osobowych - UODO).</li>
-        </ul>
-
-        <h2>5. Czas przechowywania danych</h2>
-        <p>Dane osobowe przechowywane są przez okres niezbędny do realizacji funkcji portalu, istnienia konta użytkownika lub do momentu zgłoszenia skutecznego żądania ich usunięcia.</p>
+            <h2>4. Prawa osób, których dane dotyczą</h2>
+            <p>Użytkownik ma prawo do dostępu do swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, wniesienia sprzeciwu wobec przetwarzania oraz prawo do przenoszenia danych. W celu realizacji praw prosimy o kontakt poprzez dane redakcyjne.</p>
+        </main>
     </div>
-    <footer>
-        &copy; 2026 NowinyInfo. Wszelkie prawa zastrzeżone.
-    </footer>
+    <footer>&copy; 2026 NowinyInfo. Wszelkie prawa zastrzeżone.</footer>
 </body>
 </html>
