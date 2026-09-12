@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<!-- Google tag (gtag.js) -->
+    <meta charset="UTF-8">
+  <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q2T45D69VV"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -922,6 +922,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>&copy; <span id="current-year">2026</span> NowinyInfo. Wszelkie prawa zastrzeżone. Niezależny portal informacyjny.</p>
     </footer>
 
+    <!-- Baner plików cookies -->
+    <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--portal-dark); color: #fff; padding: 15px 20px; z-index: 3000; box-shadow: 0 -4px 15px rgba(0,0,0,0.2); border-top: 4px solid var(--portal-primary);">
+        <div style="max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <p style="font-size: 13px; margin: 0; color: #d1d5db; flex: 1; line-height: 1.5;">
+                Ta strona korzysta z plików cookies w celu świadczenia usług na najwyższym poziomie oraz analizy ruchu. Korzystając z niej, wyrażasz zgodę na ich użycie. 
+                <a href="polityka-prywatnosci.html" style="color: white; text-decoration: underline; font-weight: 600;">Dowiedz się więcej w Polityce prywatności</a>.
+            </p>
+            <button class="btn" onclick="acceptCookies()" style="white-space: nowrap;">Rozumiem</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, setDoc, getDoc, updateDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -939,6 +950,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const db = getFirestore(app);
 
         document.getElementById('current-year').innerText = new Date().getFullYear();
+
+        // Obsługa banera cookies
+        function checkCookieConsent() {
+            if (!localStorage.getItem('portal_cookie_consent')) {
+                document.getElementById('cookie-banner').style.display = 'block';
+            }
+        }
+
+        window.acceptCookies = function() {
+            localStorage.setItem('portal_cookie_consent', 'true');
+            document.getElementById('cookie-banner').style.display = 'none';
+        }
 
         let currentCategory = 'all';
         let allArticlesCache = [];
@@ -1870,6 +1893,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         fetchArticles();
         fetchBreakingNews();
         fetchMsnWeatherData();
+        checkCookieConsent();
     </script>
 </body>
 </html>
