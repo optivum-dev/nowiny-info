@@ -113,6 +113,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             transition: background 0.3s, color 0.3s;
         }
 
+        /* Wyskakujące powiadomienie (Toast) od góry */
+        #toast-notification {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--portal-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--portal-radius);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            z-index: 4000;
+            font-size: 14px;
+            font-weight: 600;
+            transition: top 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 4px solid var(--portal-primary);
+            text-align: center;
+            max-width: 90%;
+        }
+        #toast-notification.show {
+            top: 20px;
+        }
+
         #breaking-news-bar {
             background-color: var(--portal-primary);
             color: white;
@@ -623,17 +646,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             backdrop-filter: blur(3px);
             justify-content: center;
             align-items: center;
+            padding: 15px; /* Bezpieczny margines wokół modala na małych ekranach */
+            overflow-y: auto;
         }
 
+        /* Responsywne okna modalne dopasowane do ekranu */
         .modal-content {
             background: var(--portal-card);
-            padding: 30px;
+            padding: 25px 20px;
             border-radius: var(--portal-radius);
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
+            max-height: 90vh; /* Zapobiega wychodzeniu poza ekran */
+            overflow-y: auto;  /* Przewijanie treści wewnątrz modala, jeśli jest za wysoki */
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             position: relative;
             border-top: 4px solid var(--portal-primary);
+            margin: auto;
         }
 
         .modal-content h2 {
@@ -745,6 +774,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K7X446DT"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Element powiadomienia wyskakującego (Toast) -->
+    <div id="toast-notification"></div>
+
     <header>
         <div class="top-bar">
             <span>Wydanie Regionalne • Portal Informacyjny</span>
@@ -1043,7 +1076,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <div class="modal" id="edit-modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content">
             <span class="close-btn" onclick="closeModal('edit-modal')">&times;</span>
             <h2>Edytuj artykuł</h2>
             <form id="edit-article-form">
@@ -1148,6 +1181,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const db = getFirestore(app);
 
         document.getElementById('current-year').innerText = new Date().getFullYear();
+
+        // Funkcja wyświetlająca powiadomienie typu Toast od góry ekranu
+        window.showNotification = function(message) {
+            const toast = document.getElementById('toast-notification');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3200);
+        }
 
         // Obsługa ciemnego motyvu
         window.toggleDarkMode = function() {
@@ -1284,7 +1327,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             checkAuthSession();
             renderArticles();
             if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
-            alert("Wylogowano pomyślnie.");
+            showNotification("Wylogowano pomyślnie.");
         }
 
         document.getElementById('update-profile-form').addEventListener('submit', async (e) => {
@@ -1297,10 +1340,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 await updateDoc(doc(db, "users", currentUser), { fullName: newFullName });
                 localStorage.setItem('portal_user_fullname', newFullName);
                 document.getElementById('current-user-name').innerText = newFullName;
-                alert("Imię i nazwisko zostały pomyślnie zaktualizowane!");
+                showNotification("Imię i nazwisko zostały pomyślnie zaktualizowane!");
             } catch (err) {
                 console.error("Błąd aktualizacji profilu:", err);
-                alert("Nie udało się zaktualizować profilu.");
+                showNotification("Nie udało się zaktualizować profilu.");
             }
         });
 
@@ -1329,11 +1372,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const text = document.getElementById('breaking-input').value.trim();
             try {
                 await setDoc(doc(db, "settings", "breakingNews"), { text });
-                alert("Pasek pilnych wiadomości został zaktualizowany!");
+                showNotification("Pasek pilnych wiadomości został zaktualizowany!");
                 fetchBreakingNews();
             } catch(err) {
                 console.error(err);
-                alert("Nie udało się zapisać paska.");
+                showNotification("Nie udało się zapisać paska.");
             }
         });
 
@@ -1341,7 +1384,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             try {
                 await setDoc(doc(db, "settings", "breakingNews"), { text: "" });
                 document.getElementById('breaking-input').value = '';
-                alert("Pasek został ukryty.");
+                showNotification("Pasek został ukryty.");
                 fetchBreakingNews();
             } catch(err) {
                 console.error(err);
@@ -1428,9 +1471,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 await setDoc(doc(db, "settings", "activePoll"), currentPollData);
                 localStorage.setItem(`portal_voted_poll_${pollId}`, 'true');
                 renderPollWidget();
+                showNotification("Głos został oddany pomyślnie!");
             } catch (err) {
                 console.error("Błąd zapisu głosu:", err);
-                alert("Nie udało się oddać głosu.");
+                showNotification("Nie udało się oddać głosu.");
             }
         }
 
@@ -1461,11 +1505,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 localStorage.removeItem(`portal_voted_poll_${currentPollData?.id || ''}`);
                 currentPollData = newPoll;
                 renderPollWidget();
-                alert("Nowa sonda została opublikowana!");
+                showNotification("Nowa sonda została opublikowana!");
                 document.getElementById('editor-poll-form').reset();
             } catch (err) {
                 console.error("Błąd publikacji sondy:", err);
-                alert("Nie udało się opublikować sondy.");
+                showNotification("Nie udało się opublikować sondy.");
             }
         });
 
@@ -1512,9 +1556,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             try {
                 await deleteDoc(doc(db, "reports", reportId));
                 fetchAndRenderReports();
+                showNotification("Zgłoszenie zostało usunięte.");
             } catch(err) {
                 console.error("Błąd usuwania zgłoszenia:", err);
-                alert("Nie udało się usunąć zgłoszenia.");
+                showNotification("Nie udało się usunąć zgłoszenia.");
             }
         }
 
@@ -1540,12 +1585,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     contact,
                     date
                 });
-                alert("Zgłoszenie komentarza zostało wysłane do redakcji.");
+                showNotification("Zgłoszenie komentarza zostało wysłane do redakcji.");
                 closeModal('report-modal');
                 document.getElementById('report-form').reset();
             } catch(err) {
                 console.error("Błąd wysyłania zgłoszenia:", err);
-                alert("Nie udało się wysłać zgłoszenia.");
+                showNotification("Nie udało się wysłać zgłoszenia.");
             }
         });
 
@@ -1784,7 +1829,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 const geoData = await geoRes.json();
 
                 if (!geoData.results || geoData.results.length === 0) {
-                    alert("Nie znaleziono takiej miejscowości w bazie.");
+                    showNotification("Nie znaleziono takiej miejscowości w bazie.");
                     return;
                 }
 
@@ -1796,7 +1841,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 fetchFullWeatherDetails(currentLat, currentLon, currentCityName);
             } catch (error) {
                 console.error("Błąd wyszukiwania miasta:", error);
-                alert("Wystąpił błąd podczas wyszukiwania miejscowości.");
+                showNotification("Wystąpił błąd podczas wyszukiwania miejscowości.");
             }
         }
 
@@ -2070,12 +2115,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             try {
                 await deleteDoc(doc(db, "articles", articleId));
-                alert("Artykuł został usunięty.");
+                showNotification("Artykuł został usunięty.");
                 showHomeView();
                 fetchArticles();
             } catch (error) {
                 console.error("Błąd usuwania artykułu:", error);
-                alert("Nie udało się usunąć artykułu.");
+                showNotification("Nie udało się usunąć artykułu.");
             }
         }
 
@@ -2109,7 +2154,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 const articleRef = doc(db, "articles", articleId);
                 await updateDoc(articleRef, { title, category, imageUrl, gallery, videoUrl, content });
 
-                alert("Artykuł zaktualizowany pomyślnie!");
+                showNotification("Artykuł zaktualizowany pomyślnie!");
                 closeModal('edit-modal');
                 fetchArticles();
                 if (currentActiveArticleId === articleId) {
@@ -2117,7 +2162,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 }
             } catch (error) {
                 console.error("Błąd edycji artykułu:", error);
-                alert("Nie udało się zaktualizować artykułu.");
+                showNotification("Nie udało się zaktualizować artykułu.");
             }
         });
 
@@ -2170,9 +2215,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             try {
                 await deleteDoc(doc(db, "articles", articleId, "comments", commentId));
                 loadComments(articleId);
+                showNotification("Komentarz został usunięty.");
             } catch (error) {
                 console.error("Błąd usuwania komentarza:", error);
-                alert("Nie udało się usunąć komentarza.");
+                showNotification("Nie udało się usunąć komentarza.");
             }
         }
 
@@ -2188,9 +2234,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 await addDoc(collection(db, "articles", currentActiveArticleId, "comments"), { author, text, date });
                 document.getElementById('comment-text').value = '';
                 loadComments(currentActiveArticleId);
+                showNotification("Komentarz został dodany pomyślnie.");
             } catch (error) {
                 console.error("Błąd dodawania komentarza:", error);
-                alert("Nie udało się dodać komentarza.");
+                showNotification("Nie udało się dodać komentarza.");
             }
         });
 
@@ -2224,18 +2271,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 const userSnapshot = await getDoc(userDocRef);
 
                 if (userSnapshot.exists()) {
-                    alert("Taki użytkownik już istnieje! Wybierz inny login.");
+                    showNotification("Taki użytkownik już istnieje! Wybierz inny login.");
                     return;
                 }
 
                 await setDoc(userDocRef, { fullName, username, password, role: "editor" });
 
-                alert("Rejestracja zakończona sukcesem! Możesz się teraz zalogować.");
+                showNotification("Rejestracja zakończona sukcesem! Możesz się teraz zalogować.");
                 closeModal('register-modal');
                 document.getElementById('register-form').reset();
             } catch (error) {
                 console.error("Błąd rejestracji:", error);
-                alert("Wystąpił błąd podczas rejestracji.");
+                showNotification("Wystąpił błąd podczas rejestracji.");
             }
         });
 
@@ -2249,7 +2296,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 const userSnapshot = await getDoc(userDocRef);
 
                 if (!userSnapshot.exists()) {
-                    alert("Nie znaleziono takiego użytkownika.");
+                    showNotification("Nie znaleziono takiego użytkownika.");
                     return;
                 }
 
@@ -2258,18 +2305,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 if (userData.password === password) {
                     localStorage.setItem('portal_user', username);
                     localStorage.setItem('portal_user_fullname', userData.fullName || username);
-                    alert("Zalogowano pomyślnie!");
+                    showNotification("Zalogowano pomyślnie!");
                     closeModal('login-modal');
                     document.getElementById('login-form').reset();
                     checkAuthSession();
                     renderArticles();
                     renderEditorManageList();
                 } else {
-                    alert("Nieprawidłowe hasło.");
+                    showNotification("Nieprawidłowe hasło.");
                 }
             } catch (error) {
                 console.error("Błąd logowania:", error);
-                alert("Wystąpił błąd podczas logowania.");
+                showNotification("Wystąpił błąd podczas logowania.");
             }
         });
 
@@ -2279,7 +2326,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const currentFullName = localStorage.getItem('portal_user_fullname');
             
             if (!currentUser) {
-                alert("Musisz być zalogowany, aby dodać artykuł.");
+                showNotification("Musisz być zalogowany, aby dodać artykuł.");
                 return;
             }
 
@@ -2309,13 +2356,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     reactions: { like: 0, heart: 0, wow: 0 }
                 });
 
-                alert("Artykuł został opublikowany!");
+                showNotification("Artykuł został opublikowany!");
                 document.getElementById('add-article-form').reset();
                 fetchArticles();
                 switchEditorTab('manage');
             } catch (error) {
                 console.error("Błąd dodawania artykułu:", error);
-                alert("Nie udało się opublikować artykułu.");
+                showNotification("Nie udało się opublikować artykułu.");
             }
         });
 
