@@ -749,6 +749,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <button class="editor-tab-btn active" id="btn-tab-add" onclick="switchEditorTab('add')">Dodaj artykuł</button>
                     <button class="editor-tab-btn" id="btn-tab-manage" onclick="switchEditorTab('manage')">Zarządzaj (<span id="all-articles-count">0</span>)</button>
                     <button class="editor-tab-btn" id="btn-tab-breaking" onclick="switchEditorTab('breaking')">Pasek Pilne</button>
+                    <button class="editor-tab-btn" id="btn-tab-poll" onclick="switchEditorTab('poll')">Sonda</button>
                     <button class="editor-tab-btn" id="btn-tab-profile" onclick="switchEditorTab('profile')">Profil</button>
                     <button class="editor-tab-btn" id="btn-tab-reports" onclick="switchEditorTab('reports')">Zgłoszenia (<span id="reports-count">0</span>)</button>
                 </div>
@@ -801,6 +802,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <button type="submit" class="btn">Zapisz pasek</button>
                             <button type="button" class="btn btn-danger" onclick="clearBreakingNews()">Schowaj pasek</button>
                         </div>
+                    </form>
+                </div>
+
+                <div id="editor-section-poll" style="display: none;">
+                    <p style="font-size: 13px; color: var(--portal-gray); margin-bottom: 15px;">Skonfiguruj aktywną sondę redakcyjną dla czytelników.</p>
+                    <form id="editor-poll-form">
+                        <div class="form-group">
+                            <label>Pytanie sondy</label>
+                            <input type="text" id="edit-poll-question" placeholder="np. Czy oceniasz mijający rok pozytywnie?" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Opcje odpowiedzi (oddzielone przecinkami lub po jednej w linii / wpisz pierwszą opcję)</label>
+                            <input type="text" id="edit-poll-opt1" placeholder="np. Zdecydowanie tak" required style="margin-bottom: 8px;">
+                            <input type="text" id="edit-poll-opt2" placeholder="np. Zdecydowanie nie" required style="margin-bottom: 8px;">
+                            <input type="text" id="edit-poll-opt3" placeholder="np. Nie mam zdania (opcjonalnie)">
+                        </div>
+                        <button type="submit" class="btn">Zapisz i aktywuj sondę</button>
                     </form>
                 </div>
 
@@ -896,6 +914,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="widget">
                 <h3>Szukaj w portalu</h3>
                 <input type="text" id="sidebar-search-input" placeholder="Szukaj artykułu..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--portal-border); border-radius: 4px; font-size: 13px; outline: none; background: #fff;">
+            </div>
+
+            <div class="widget">
+                <h3>Sonda redakcyjna</h3>
+                <div id="poll-widget-content">
+                    <div style="font-size: 13px; color: var(--portal-gray);">Ładowanie sondy...</div>
+                </div>
             </div>
 
             <div class="widget">
@@ -1116,24 +1141,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const addSec = document.getElementById('editor-section-add');
             const manageSec = document.getElementById('editor-section-manage');
             const breakingSec = document.getElementById('editor-section-breaking');
+            const pollSec = document.getElementById('editor-section-poll');
             const profileSec = document.getElementById('editor-section-profile');
             const reportsSec = document.getElementById('editor-section-reports');
             
             const btnAdd = document.getElementById('btn-tab-add');
             const btnManage = document.getElementById('btn-tab-manage');
             const btnBreaking = document.getElementById('btn-tab-breaking');
+            const btnPoll = document.getElementById('btn-tab-poll');
             const btnProfile = document.getElementById('btn-tab-profile');
             const btnReports = document.getElementById('btn-tab-reports');
 
             if(addSec) addSec.style.display = 'none';
             if(manageSec) manageSec.style.display = 'none';
             if(breakingSec) breakingSec.style.display = 'none';
+            if(pollSec) pollSec.style.display = 'none';
             if(profileSec) profileSec.style.display = 'none';
             if(reportsSec) reportsSec.style.display = 'none';
 
             if(btnAdd) btnAdd.classList.remove('active');
             if(btnManage) btnManage.classList.remove('active');
             if(btnBreaking) btnBreaking.classList.remove('active');
+            if(btnPoll) btnPoll.classList.remove('active');
             if(btnProfile) btnProfile.classList.remove('active');
             if(btnReports) btnReports.classList.remove('active');
 
@@ -1147,6 +1176,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             } else if (tabName === 'breaking') {
                 if(breakingSec) breakingSec.style.display = 'block';
                 if(btnBreaking) btnBreaking.classList.add('active');
+            } else if (tabName === 'poll') {
+                if(pollSec) pollSec.style.display = 'block';
+                if(btnPoll) btnPoll.classList.add('active');
             } else if (tabName === 'profile') {
                 if(profileSec) profileSec.style.display = 'block';
                 if(btnProfile) btnProfile.classList.add('active');
@@ -1242,6 +1274,127 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 console.error(err);
             }
         }
+
+        // Obsługa sondy redakcyjnej
+        let currentPollData = null;
+
+        async function fetchActivePoll() {
+            const pollWidget = document.getElementById('poll-widget-content');
+            try {
+                const pollDoc = await getDoc(doc(db, "settings", "activePoll"));
+                if (!pollDoc.exists() || !pollDoc.data().question) {
+                    pollWidget.innerHTML = `<div style="font-size: 13px; color: var(--portal-gray);">Brak aktywnej sondy.</div>`;
+                    return;
+                }
+
+                currentPollData = pollDoc.data();
+                renderPollWidget();
+            } catch (err) {
+                console.error("Błąd ładowania sondy:", err);
+                pollWidget.innerHTML = `<div style="font-size: 13px; color: var(--portal-primary);">Nie udało się załadować sondy.</div>`;
+            }
+        }
+
+        function renderPollWidget() {
+            const pollWidget = document.getElementById('poll-widget-content');
+            if (!currentPollData) return;
+
+            const pollId = currentPollData.id || "default_poll";
+            const hasVoted = localStorage.getItem(`portal_voted_poll_${pollId}`) === 'true';
+
+            let html = `<div style="font-size: 13px; font-weight: bold; color: var(--portal-dark); margin-bottom: 12px; line-height: 1.3;">${currentPollData.question}</div>`;
+
+            if (!hasVoted) {
+                html += `<form id="poll-vote-form" onsubmit="submitPollVote(event)"><div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">`;
+                currentPollData.options.forEach((opt, idx) => {
+                    html += `
+                        <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="radio" name="poll-option" value="${idx}" required style="accent-color: var(--portal-primary);">
+                            <span>${opt.text}</span>
+                        </label>
+                    `;
+                });
+                html += `</div><button type="submit" class="btn" style="width: 100%; padding: 6px; font-size: 12px;">Zagłosuj</button></form>`;
+            } else {
+                const totalVotes = currentPollData.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+                html += `<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">`;
+                currentPollData.options.forEach(opt => {
+                    const votes = opt.votes || 0;
+                    const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                    html += `
+                        <div>
+                            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                <span>${opt.text}</span>
+                                <span style="font-weight: bold;">${percent}% (${votes})</span>
+                            </div>
+                            <div style="background: var(--portal-border); height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="background: var(--portal-primary); width: ${percent}%; height: 100%;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div><div style="font-size: 11px; color: var(--portal-gray); text-align: center; font-style: italic;">Dziękujemy za oddanie głosu! Łącznie głosów: ${totalVotes}</div>`;
+            }
+
+            pollWidget.innerHTML = html;
+        }
+
+        window.submitPollVote = async function(e) {
+            e.preventDefault();
+            if (!currentPollData) return;
+
+            const selected = document.querySelector('input[name="poll-option"]:checked');
+            if (!selected) return;
+
+            const optIndex = parseInt(selected.value);
+            const pollId = currentPollData.id || "default_poll";
+
+            currentPollData.options[optIndex].votes = (currentPollData.options[optIndex].votes || 0) + 1;
+
+            try {
+                await setDoc(doc(db, "settings", "activePoll"), currentPollData);
+                localStorage.setItem(`portal_voted_poll_${pollId}`, 'true');
+                renderPollWidget();
+            } catch (err) {
+                console.error("Błąd zapisu głosu:", err);
+                alert("Nie udało się oddać głosu.");
+            }
+        }
+
+        document.getElementById('editor-poll-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = document.getElementById('edit-poll-question').value.trim();
+            const opt1Text = document.getElementById('edit-poll-opt1').value.trim();
+            const opt2Text = document.getElementById('edit-poll-opt2').value.trim();
+            const opt3Text = document.getElementById('edit-poll-opt3').value.trim();
+
+            const options = [
+                { text: opt1Text, votes: 0 },
+                { text: opt2Text, votes: 0 }
+            ];
+            if (opt3Text) {
+                options.push({ text: opt3Text, votes: 0 });
+            }
+
+            const pollId = "poll_" + Date.now();
+            const newPoll = {
+                id: pollId,
+                question,
+                options
+            };
+
+            try {
+                await setDoc(doc(db, "settings", "activePoll"), newPoll);
+                localStorage.removeItem(`portal_voted_poll_${currentPollData?.id || ''}`);
+                currentPollData = newPoll;
+                renderPollWidget();
+                alert("Nowa sonda została opublikowana!");
+                document.getElementById('editor-poll-form').reset();
+            } catch (err) {
+                console.error("Błąd publikacji sondy:", err);
+                alert("Nie udało się opublikować sondy.");
+            }
+        });
 
         async function fetchAndRenderReports() {
             const reportsContainer = document.getElementById('editor-reports-list');
@@ -2053,6 +2206,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         fetchArticles();
         fetchBreakingNews();
         fetchMsnWeatherData();
+        fetchActivePoll();
         checkCookieConsent();
     </script>
 </body>
