@@ -463,6 +463,50 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             white-space: pre-wrap;
         }
 
+        /* Style galerii i wideo w szczegółach artykułu */
+        .article-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .article-gallery img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            border: 1px solid var(--portal-border);
+        }
+
+        .article-gallery img:hover {
+            transform: scale(1.03);
+            opacity: 0.9;
+        }
+
+        .article-video-wrapper {
+            margin: 25px 0;
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--portal-radius);
+            background: #000;
+            border: 1px solid var(--portal-border);
+        }
+
+        .article-video-wrapper iframe,
+        .article-video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         #weather-view {
             display: none;
             background: var(--portal-card);
@@ -766,8 +810,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <input type="text" id="art-category" placeholder="np. Sport" required>
                         </div>
                         <div class="form-group">
-                            <label>URL zdjęcia (link grafiki)</label>
+                            <label>Główny URL zdjęcia</label>
                             <input type="url" id="art-image" placeholder="https://example.com/image.jpg" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dodatkowe zdjęcia do galerii (po jednym adresie URL w każdej linii)</label>
+                            <textarea id="art-gallery" rows="3" placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>URL wideo (YouTube / MP4)</label>
+                            <input type="url" id="art-video" placeholder="https://www.youtube.com/embed/... lub link do filmu">
                         </div>
                         <div class="form-group">
                             <label>Treść artykułu (zaawansowany edytor formatowania)</label>
@@ -1005,8 +1057,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <input type="text" id="edit-art-category" required>
                 </div>
                 <div class="form-group">
-                    <label>URL zdjęcia</label>
+                    <label>Główny URL zdjęcia</label>
                     <input type="url" id="edit-art-image" required>
+                </div>
+                <div class="form-group">
+                    <label>Dodatkowe zdjęcia do galerii (po jednym w linii)</label>
+                    <textarea id="edit-art-gallery" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>URL wideo (YouTube / MP4)</label>
+                    <input type="url" id="edit-art-video">
                 </div>
                 <div class="form-group">
                     <label>Treść</label>
@@ -1109,6 +1169,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             textarea.value = text.substring(0, start) + startTag + selectedText + endTag + text.substring(end);
             textarea.focus();
             textarea.setSelectionRange(start + startTag.length, end + startTag.length);
+        }
+
+        // Pomocnik konwersji linków YouTube na wersję embed
+        function formatVideoEmbed(url) {
+            if (!url) return '';
+            let embedUrl = url.trim();
+            if (embedUrl.includes('youtube.com/watch?v=')) {
+                embedUrl = embedUrl.replace('watch?v=', 'embed/');
+            } else if (embedUrl.includes('youtu.be/')) {
+                embedUrl = embedUrl.replace('youtu.be/', 'www.youtube.com/embed/');
+            }
+            return embedUrl;
         }
 
         // Obsługa banera cookies
@@ -1768,6 +1840,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     `;
                 }
 
+                // Generowanie sekcji galerii zdjęć jeśli istnieją
+                let galleryHTML = '';
+                if (article.gallery && Array.isArray(article.gallery) && article.gallery.length > 0) {
+                    let imagesItems = '';
+                    article.gallery.forEach(imgUrl => {
+                        if (imgUrl.trim()) {
+                            imagesItems += `<img src="${imgUrl.trim()}" alt="Galeria zdjęcie" onclick="window.open('${imgUrl.trim()}', '_blank')">`;
+                        }
+                    });
+                    if (imagesItems) {
+                        galleryHTML = `
+                            <div style="margin: 25px 0;">
+                                <h3 style="font-size: 16px; text-transform: uppercase; margin-bottom: 12px; color: var(--portal-dark);">Galeria zdjęć</h3>
+                                <div class="article-gallery">${imagesItems}</div>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Generowanie sekcji wideo jeśli istnieje
+                let videoHTML = '';
+                if (article.videoUrl && article.videoUrl.trim() !== '') {
+                    const embedUrl = formatVideoEmbed(article.videoUrl);
+                    videoHTML = `
+                        <div style="margin: 25px 0;">
+                            <h3 style="font-size: 16px; text-transform: uppercase; margin-bottom: 12px; color: var(--portal-dark);">Materiał wideo</h3>
+                            <div class="article-video-wrapper">
+                                <iframe src="${embedUrl}" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 detailContainer.innerHTML = `
                     <div class="article-meta">
                         <span>Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • ${article.date}</span>
@@ -1776,6 +1881,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <h1 style="color: var(--portal-dark); font-size: 26px; margin-bottom: 15px; line-height: 1.3;">${article.title}</h1>
                     <img src="${article.imageUrl}" alt="${article.title}" style="width: 100%; height: 350px; object-fit: cover; border-radius: 4px; margin-bottom: 20px;">
                     <div class="article-full-content">${article.content}</div>
+                    ${galleryHTML}
+                    ${videoHTML}
                     ${actionButtonsHTML}
                 `;
 
@@ -1784,7 +1891,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 document.getElementById('count-heart').innerText = reactions.heart || 0;
                 document.getElementById('count-wow').innerText = reactions.wow || 0;
 
-                // Renderowanie sekcji "Inni czytali"
                 renderOthersReadSection(articleId);
             } else {
                 detailContainer.innerHTML = `<p>Nie znaleziono artykułu.</p>`;
@@ -1981,6 +2087,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             document.getElementById('edit-art-title').value = article.title;
             document.getElementById('edit-art-category').value = article.category;
             document.getElementById('edit-art-image').value = article.imageUrl;
+            document.getElementById('edit-art-gallery').value = article.gallery ? article.gallery.join('\n') : '';
+            document.getElementById('edit-art-video').value = article.videoUrl || '';
             document.getElementById('edit-art-content').value = article.content;
 
             openModal('edit-modal');
@@ -1992,11 +2100,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const title = document.getElementById('edit-art-title').value;
             const category = document.getElementById('edit-art-category').value.trim();
             const imageUrl = document.getElementById('edit-art-image').value;
+            const galleryRaw = document.getElementById('edit-art-gallery').value;
+            const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const videoUrl = document.getElementById('edit-art-video').value.trim();
             const content = document.getElementById('edit-art-content').value;
 
             try {
                 const articleRef = doc(db, "articles", articleId);
-                await updateDoc(articleRef, { title, category, imageUrl, content });
+                await updateDoc(articleRef, { title, category, imageUrl, gallery, videoUrl, content });
 
                 alert("Artykuł zaktualizowany pomyślnie!");
                 closeModal('edit-modal');
@@ -2175,6 +2286,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const title = document.getElementById('art-title').value;
             const category = document.getElementById('art-category').value.trim();
             const imageUrl = document.getElementById('art-image').value;
+            const galleryRaw = document.getElementById('art-gallery').value;
+            const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const videoUrl = document.getElementById('art-video').value.trim();
             const content = document.getElementById('art-content').value;
             const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const createdAt = Date.now();
@@ -2184,6 +2298,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     title,
                     category,
                     imageUrl,
+                    gallery,
+                    videoUrl,
                     content,
                     authorUsername: currentUser,
                     authorFullName: currentFullName || currentUser,
@@ -2212,3 +2328,4 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </script>
 </body>
 </html>
+```[cite: 12]
