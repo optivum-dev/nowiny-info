@@ -34,6 +34,71 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             --msn-blue: #0078d4;
         }
 
+        /* Motyw ciemny */
+        body.dark-theme {
+            --portal-bg: #111827;
+            --portal-card: #1f2937;
+            --portal-text: #f9fafb;
+            --portal-gray: #9ca3af;
+            --portal-border: #374151;
+            --portal-dark: #111827;
+        }
+
+        body.dark-theme header {
+            background-color: #1f2937;
+        }
+
+        body.dark-theme .top-bar {
+            background-color: #0b0f19;
+        }
+
+        body.dark-theme .logo h1 {
+            color: #f9fafb;
+        }
+
+        body.dark-theme .main-article, 
+        body.dark-theme .widget, 
+        body.dark-theme #details-view, 
+        body.dark-theme .editor-panel, 
+        body.dark-theme #weather-view,
+        body.dark-theme .modal-content,
+        body.dark-theme .comment-item,
+        body.dark-theme .comment-form,
+        body.dark-theme .reactions-bar,
+        body.dark-theme .forecast-card {
+            background: var(--portal-card);
+            color: var(--portal-text);
+            border-color: var(--portal-border);
+        }
+
+        body.dark-theme .main-article h2,
+        body.dark-theme .widget h3,
+        body.dark-theme .comments-section h3,
+        body.dark-theme .modal-content h2,
+        body.dark-theme #details-view h1 {
+            color: #f9fafb;
+        }
+
+        body.dark-theme .main-article p,
+        body.dark-theme .article-full-content,
+        body.dark-theme .comment-item div {
+            color: #d1d5db;
+        }
+
+        body.dark-theme .reaction-btn {
+            background: #111827;
+            color: #f9fafb;
+            border-color: var(--portal-border);
+        }
+
+        body.dark-theme .form-group input, 
+        body.dark-theme .form-group textarea, 
+        body.dark-theme .form-group select {
+            background: #111827;
+            color: #f9fafb;
+            border-color: var(--portal-border);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -45,6 +110,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             background-color: var(--portal-bg);
             color: var(--portal-text);
             line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
         }
 
         #breaking-news-bar {
@@ -607,6 +673,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             color: var(--portal-primary);
             text-decoration: underline;
         }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+        }
+        .editor-toolbar button {
+            background: var(--portal-dark);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .editor-toolbar button:hover {
+            background: var(--portal-primary);
+        }
     </style>
 </head>
 <body>
@@ -618,6 +704,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="top-bar">
             <span>Wydanie Regionalne • Portal Informacyjny</span>
             <div class="auth-container">
+                <button class="btn" style="padding: 4px 10px; font-size: 11px; background: #374151;" onclick="toggleDarkMode()">🌓 Motyw ciemny</button>
                 <div class="auth-links hide-when-auth">
                     <a onclick="openModal('login-modal')">Logowanie</a>
                     <span style="margin: 0 6px; color: #4b5563;">|</span>
@@ -681,8 +768,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <input type="url" id="art-image" placeholder="https://example.com/image.jpg" required>
                         </div>
                         <div class="form-group">
-                            <label>Treść artykułu</label>
-                            <textarea id="art-content" rows="4" required></textarea>
+                            <label>Treść artykułu (zaawansowany edytor formatowania)</label>
+                            <div class="editor-toolbar">
+                                <button type="button" onclick="formatText('art-content', '<b>', '</b>')"><b>B (Pogrubienie)</b></button>
+                                <button type="button" onclick="formatText('art-content', '<i>', '</i>')"><i>I (Kursywa)</i></button>
+                                <button type="button" onclick="formatText('art-content', '<u>', '</u>')"><u>U (Podkreślenie)</u></button>
+                                <button type="button" onclick="formatText('art-content', '<span style=&quot;font-size: 20px;&quot;>', '</span>')">Duża czcionka</button>
+                                <button type="button" onclick="formatText('art-content', '<span style=&quot;font-size: 12px;&quot;>', '</span>')">Mała czcionka</button>
+                                <button type="button" onclick="formatText('art-content', '<span style=&quot;color: var(--portal-primary);&quot;>', '</span>')">Kolor główny</button>
+                                <button type="button" onclick="formatText('art-content', '<p>', '</p>')">Akapit</button>
+                            </div>
+                            <textarea id="art-content" rows="6" required></textarea>
                         </div>
                         <button type="submit" class="btn">Opublikuj artykuł</button>
                     </form>
@@ -741,6 +837,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <button class="reaction-btn" onclick="reactArticle('like')">👍 Polub <span id="count-like" style="font-weight: 800; color: var(--portal-primary);">0</span></button>
                     <button class="reaction-btn" onclick="reactArticle('heart')">❤️ Super <span id="count-heart" style="font-weight: 800; color: var(--portal-primary);">0</span></button>
                     <button class="reaction-btn" onclick="reactArticle('wow')">😮 Zaskakujące <span id="count-wow" style="font-weight: 800; color: var(--portal-primary);">0</span></button>
+                </div>
+
+                <!-- Sekcja Inni czytali -->
+                <div class="others-read-section" style="margin-top: 35px; border-top: 1px solid var(--portal-border); padding-top: 25px;">
+                    <h3 style="font-size: 18px; text-transform: uppercase; color: var(--portal-dark); margin-bottom: 15px;">Inni czytali</h3>
+                    <div id="others-read-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                    </div>
                 </div>
 
                 <div class="comments-section">
@@ -862,7 +965,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <div class="modal" id="edit-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 600px;">
             <span class="close-btn" onclick="closeModal('edit-modal')">&times;</span>
             <h2>Edytuj artykuł</h2>
             <form id="edit-article-form">
@@ -881,7 +984,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
                 <div class="form-group">
                     <label>Treść</label>
-                    <textarea id="edit-art-content" rows="4" required></textarea>
+                    <div class="editor-toolbar">
+                        <button type="button" onclick="formatText('edit-art-content', '<b>', '</b>')"><b>B</b></button>
+                        <button type="button" onclick="formatText('edit-art-content', '<i>', '</i>')"><i>I</i></button>
+                        <button type="button" onclick="formatText('edit-art-content', '<u>', '</u>')"><u>U</u></button>
+                        <button type="button" onclick="formatText('edit-art-content', '<span style=&quot;font-size: 20px;&quot;>', '</span>')">Duża czcionka</button>
+                        <button type="button" onclick="formatText('edit-art-content', '<span style=&quot;font-size: 12px;&quot;>', '</span>')">Mała czcionka</button>
+                        <button type="button" onclick="formatText('edit-art-content', '<span style=&quot;color: var(--portal-primary);&quot;>', '</span>')">Kolor główny</button>
+                    </div>
+                    <textarea id="edit-art-content" rows="6" required></textarea>
                 </div>
                 <button type="submit" class="btn" style="width: 100%;">Zapisz zmiany</button>
             </form>
@@ -951,6 +1062,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const db = getFirestore(app);
 
         document.getElementById('current-year').innerText = new Date().getFullYear();
+
+        // Obsługa ciemnego motyvu
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('portal_dark_mode', document.body.classList.contains('dark-theme'));
+        }
+
+        if (localStorage.getItem('portal_dark_mode') === 'true') {
+            document.body.classList.add('dark-theme');
+        }
+
+        // Pomocnik zaawansowanego edytora treści
+        window.formatText = function(textareaId, startTag, endTag) {
+            const textarea = document.getElementById(textareaId);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selectedText = text.substring(start, end);
+            textarea.value = text.substring(0, start) + startTag + selectedText + endTag + text.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + startTag.length, end + startTag.length);
+        }
 
         // Obsługa banera cookies
         function checkCookieConsent() {
@@ -1129,11 +1262,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 snapshot.forEach(docSnap => {
                     const rep = docSnap.data();
                     const item = document.createElement('div');
-                    item.style.cssText = "background: #f9fafb; border: 1px solid var(--portal-border); padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;";
+                    item.style.cssText = "background: var(--portal-bg); border: 1px solid var(--portal-border); padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;";
                     item.innerHTML = `
                         <div>
                             <div style="font-size: 12px; font-weight: bold; color: var(--portal-primary);">Powód: ${rep.reason} • Kontakt: ${rep.contact}</div>
-                            <div style="font-size: 12px; color: var(--portal-dark); margin-top: 2px;">Zgłoszono: ${rep.date}</div>
+                            <div style="font-size: 12px; color: var(--portal-text); margin-top: 2px;">Zgłoszono: ${rep.date}</div>
                         </div>
                         <div style="display: flex; gap: 6px; flex-shrink: 0;">
                             <button class="btn btn-warning" style="padding: 6px 12px; font-size: 11px;" onclick="showDetailsView('${rep.articleId}')">Artykuł</button>
@@ -1230,7 +1363,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 articleEl.className = 'main-article';
                 if (isNewest) {
                     articleEl.style.borderLeft = "4px solid var(--portal-primary)";
-                    articleEl.style.background = "#fffbfb";
                 }
 
                 articleEl.innerHTML = `
@@ -1240,7 +1372,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <span>👁️ ${article.views || 0}</span>
                     </div>
                     <h2 onclick="showDetailsView('${article.id}')">${article.title}</h2>
-                    <p>${article.content.substring(0, 160)}...</p>
+                    <p>${article.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
                     <button class="btn" onclick="showDetailsView('${article.id}')">Czytaj dalej</button>
                     ${actionButtonsHTML}
                 `;
@@ -1266,7 +1398,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 item.onclick = () => showDetailsView(art.id);
                 item.innerHTML = `
                     <div style="font-size: 11px; font-weight: bold; color: var(--portal-primary);">${art.date}</div>
-                    <div style="font-size: 13px; font-weight: 600; color: var(--portal-dark); line-height: 1.2; margin-top: 2px;">${art.title}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--portal-text); line-height: 1.2; margin-top: 2px;">${art.title}</div>
                 `;
                 latestContainer.appendChild(item);
             });
@@ -1290,7 +1422,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 item.onclick = () => showDetailsView(art.id);
                 item.innerHTML = `
                     <div style="font-size: 11px; font-weight: bold; color: var(--portal-primary);">#${index + 1} • 👁️ ${art.views || 0} wyświetleń</div>
-                    <div style="font-size: 13px; font-weight: 600; color: var(--portal-dark); line-height: 1.2; margin-top: 2px;">${art.title}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--portal-text); line-height: 1.2; margin-top: 2px;">${art.title}</div>
                 `;
                 popularContainer.appendChild(item);
             });
@@ -1489,7 +1621,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <h1 style="color: var(--portal-dark); font-size: 26px; margin-bottom: 15px; line-height: 1.3;">${article.title}</h1>
                     <img src="${article.imageUrl}" alt="${article.title}" style="width: 100%; height: 350px; object-fit: cover; border-radius: 4px; margin-bottom: 20px;">
-                    <div class="article-full-content">${article.content.replace(/\n/g, '<br>')}</div>
+                    <div class="article-full-content">${article.content}</div>
                     ${actionButtonsHTML}
                 `;
 
@@ -1497,11 +1629,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 document.getElementById('count-like').innerText = reactions.like || 0;
                 document.getElementById('count-heart').innerText = reactions.heart || 0;
                 document.getElementById('count-wow').innerText = reactions.wow || 0;
+
+                // Renderowanie sekcji "Inni czytali"
+                renderOthersReadSection(articleId);
             } else {
                 detailContainer.innerHTML = `<p>Nie znaleziono artykułu.</p>`;
             }
 
             loadComments(articleId);
+        }
+
+        function renderOthersReadSection(currentId) {
+            const othersGrid = document.getElementById('others-read-grid');
+            if (!othersGrid) return;
+
+            othersGrid.innerHTML = '';
+            const otherArticles = allArticlesCache.filter(a => a.id !== currentId).sort(() => 0.5 - Math.random()).slice(0, 3);
+
+            if (otherArticles.length === 0) {
+                othersGrid.innerHTML = `<p style="font-size: 13px; color: var(--portal-gray);">Brak innych artykułów.</p>`;
+                return;
+            }
+
+            otherArticles.forEach(art => {
+                const card = document.createElement('div');
+                card.style.cssText = "background: var(--portal-bg); border: 1px solid var(--portal-border); border-radius: 6px; padding: 12px; cursor: pointer; transition: transform 0.2s;";
+                card.onclick = () => showDetailsView(art.id);
+                card.innerHTML = `
+                    <img src="${art.imageUrl}" alt="${art.title}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+                    <div style="font-size: 10px; font-weight: bold; color: var(--portal-primary); text-transform: uppercase;">${art.category}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--portal-text); line-height: 1.3; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${art.title}</div>
+                `;
+                othersGrid.appendChild(card);
+            });
         }
 
         window.showWeatherView = function() {
@@ -1589,7 +1749,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 articleEl.className = 'main-article';
                 if (isNewest) {
                     articleEl.style.borderLeft = "4px solid var(--portal-primary)";
-                    articleEl.style.background = "#fffbfb";
                 }
 
                 articleEl.innerHTML = `
@@ -1599,7 +1758,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <span>👁️ ${article.views || 0}</span>
                     </div>
                     <h2 onclick="showDetailsView('${article.id}')">${article.title}</h2>
-                    <p>${article.content.substring(0, 160)}...</p>
+                    <p>${article.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
                     <button class="btn" onclick="showDetailsView('${article.id}')">Czytaj dalej</button>
                     ${actionButtonsHTML}
                 `;
@@ -1630,11 +1789,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             allArticlesCache.forEach(art => {
                 const item = document.createElement('div');
-                item.style.cssText = "background: #f9fafb; border: 1px solid var(--portal-border); padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;";
+                item.style.cssText = "background: var(--portal-bg); border: 1px solid var(--portal-border); padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;";
                 item.innerHTML = `
                     <div style="overflow: hidden;">
                         <div style="font-size: 12px; font-weight: bold; color: var(--portal-primary); text-transform: uppercase;">${art.category} • Autor: ${art.authorFullName || 'Redakcja'}</div>
-                        <div style="font-size: 14px; font-weight: 600; color: var(--portal-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;">${art.title}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: var(--portal-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;">${art.title}</div>
                         <div style="font-size: 11px; color: var(--portal-gray);">${art.date} | 👁️ ${art.views || 0}</div>
                     </div>
                     <div style="display: flex; gap: 6px; flex-shrink: 0;">
@@ -1728,7 +1887,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <span class="comment-author">${comment.author}</span>
                             <span>${comment.date}</span>
                         </div>
-                        <div style="font-size: 13px; color: #374151; margin-bottom: 10px;">${comment.text}</div>
+                        <div style="font-size: 13px; margin-bottom: 10px;">${comment.text}</div>
                         <div style="display: flex; justify-content: flex-end;">
                             ${actionButton}
                         </div>
