@@ -113,7 +113,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             transition: background 0.3s, color 0.3s;
         }
 
-        /* Wyskakujące powiadomienie (Toast) od góry */
         #toast-notification {
             position: fixed;
             top: -100px;
@@ -324,6 +323,53 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             background: var(--portal-primary);
         }
 
+        /* Style widoku kafelkowego (domyślny) */
+        #news-container.grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        #news-container.grid-view .main-article {
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #news-container.grid-view .main-article img {
+            height: 180px;
+        }
+
+        /* Style widoku listy */
+        #news-container.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #news-container.list-view .main-article {
+            margin-bottom: 0;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        #news-container.list-view .main-article img {
+            height: 140px;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 600px) {
+            #news-container.list-view .main-article {
+                grid-template-columns: 1fr;
+            }
+            #news-container.list-view .main-article img {
+                height: 180px;
+            }
+        }
+
         .main-article {
             background: var(--portal-card);
             padding: 25px;
@@ -421,6 +467,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             color: var(--portal-gray);
             font-size: 15px;
             border: 1px solid var(--portal-border);
+            grid-column: 1 / -1;
         }
 
         .reactions-bar {
@@ -486,7 +533,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             white-space: pre-wrap;
         }
 
-        /* Style galerii i wideo w szczegółach artykułu */
         .article-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -646,19 +692,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             backdrop-filter: blur(3px);
             justify-content: center;
             align-items: center;
-            padding: 15px; /* Bezpieczny margines wokół modala na małych ekranach */
+            padding: 15px;
             overflow-y: auto;
         }
 
-        /* Responsywne okna modalne dopasowane do ekranu */
         .modal-content {
             background: var(--portal-card);
             padding: 25px 20px;
             border-radius: var(--portal-radius);
             width: 100%;
             max-width: 600px;
-            max-height: 90vh; /* Zapobiega wychodzeniu poza ekran */
-            overflow-y: auto;  /* Przewijanie treści wewnątrz modala, jeśli jest za wysoki */
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             position: relative;
             border-top: 4px solid var(--portal-primary);
@@ -775,7 +820,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-    <!-- Element powiadomienia wyskakującego (Toast) -->
     <div id="toast-notification"></div>
 
     <header>
@@ -827,7 +871,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <button class="editor-tab-btn active" id="btn-tab-add" onclick="switchEditorTab('add')">Dodaj artykuł</button>
                     <button class="editor-tab-btn" id="btn-tab-manage" onclick="switchEditorTab('manage')">Zarządzaj (<span id="all-articles-count">0</span>)</button>
                     <button class="editor-tab-btn" id="btn-tab-breaking" onclick="switchEditorTab('breaking')">Pasek Pilne</button>
-                    <button class="editor-tab-btn" id="btn-tab-poll" onclick="switchEditorTab('poll')">Sonda</button>
+                    <button class="editor-tab-btn" id="btn-tab-poll" onclick="switchEditorTab('poll')">Sondy</button>
+                    <button class="editor-tab-btn" id="btn-tab-view" onclick="switchEditorTab('view')">Widok strony</button>
                     <button class="editor-tab-btn" id="btn-tab-profile" onclick="switchEditorTab('profile')">Profil</button>
                     <button class="editor-tab-btn" id="btn-tab-reports" onclick="switchEditorTab('reports')">Zgłoszenia (<span id="reports-count">0</span>)</button>
                 </div>
@@ -841,6 +886,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div class="form-group">
                             <label>Kategoria (Wiadomości, Region, Sport, Biznes, Styl życia)</label>
                             <input type="text" id="art-category" placeholder="np. Sport" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="art-updated" style="width: auto;">
+                            <label for="art-updated" style="margin-bottom: 0; cursor: pointer;">Oznacz jako Aktualizacja</label>
                         </div>
                         <div class="form-group">
                             <label>Główny URL zdjęcia</label>
@@ -892,20 +941,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
 
                 <div id="editor-section-poll" style="display: none;">
-                    <p style="font-size: 13px; color: var(--portal-gray); margin-bottom: 15px;">Skonfiguruj aktywną sondę redakcyjną dla czytelników.</p>
-                    <form id="editor-poll-form">
+                    <p style="font-size: 13px; color: var(--portal-gray); margin-bottom: 15px;">Zarządzaj sondami redakcyjnymi. Zamknięcie sondy ukrywa ją przed odwiedzającymi witrynę.</p>
+                    <form id="editor-poll-form" style="margin-bottom: 25px; background: var(--portal-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--portal-border);">
+                        <input type="hidden" id="edit-poll-id">
+                        <h4 id="poll-form-title" style="font-size: 14px; text-transform: uppercase; margin-bottom: 12px; color: var(--portal-dark);">Dodaj nową sondę</h4>
                         <div class="form-group">
                             <label>Pytanie sondy</label>
                             <input type="text" id="edit-poll-question" placeholder="np. Czy oceniasz mijający rok pozytywnie?" required>
                         </div>
                         <div class="form-group">
-                            <label>Opcje odpowiedzi (oddzielone przecinkami lub po jednej w linii / wpisz pierwszą opcję)</label>
+                            <label>Opcje odpowiedzi (minimum 2)</label>
                             <input type="text" id="edit-poll-opt1" placeholder="np. Zdecydowanie tak" required style="margin-bottom: 8px;">
                             <input type="text" id="edit-poll-opt2" placeholder="np. Zdecydowanie nie" required style="margin-bottom: 8px;">
                             <input type="text" id="edit-poll-opt3" placeholder="np. Nie mam zdania (opcjonalnie)">
                         </div>
-                        <button type="submit" class="btn">Zapisz i aktywuj sondę</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn" id="poll-submit-btn">Opublikuj nową sondę</button>
+                            <button type="button" class="btn btn-danger" id="poll-cancel-btn" style="display: none;" onclick="resetPollForm()">Anuluj edycję</button>
+                        </div>
                     </form>
+                    <h4 style="font-size: 14px; text-transform: uppercase; margin-bottom: 12px; color: var(--portal-dark);">Lista wszystkich sond</h4>
+                    <div id="editor-polls-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto;">
+                    </div>
+                </div>
+
+                <div id="editor-section-view" style="display: none;">
+                    <p style="font-size: 13px; color: var(--portal-gray); margin-bottom: 15px;">Wybierz domyślny układ wyświetlania artykułów na stronie głównej dla odwiedzających.</p>
+                    <div class="form-group">
+                        <label>Tryb układu strony głównej</label>
+                        <select id="home-view-mode-select">
+                            <option value="grid">Widok kafelkowy (Siatka)</option>
+                            <option value="list">Widok listy (Kompaktowy)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn" onclick="saveHomeViewMode()">Zapisz ustawienie widoku</button>
                 </div>
 
                 <div id="editor-section-profile" style="display: none;">
@@ -943,7 +1012,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <button class="reaction-btn" onclick="reactArticle('wow')">😮 Zaskakujące <span id="count-wow" style="font-weight: 800; color: var(--portal-primary);">0</span></button>
                 </div>
 
-                <!-- Sekcja Inni czytali -->
                 <div class="others-read-section" style="margin-top: 35px; border-top: 1px solid var(--portal-border); padding-top: 25px;">
                     <h3 style="font-size: 18px; text-transform: uppercase; color: var(--portal-dark); margin-bottom: 15px;">Inni czytali</h3>
                     <div id="others-read-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
@@ -1035,6 +1103,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </sidebar>
     </div>
 
+    <!-- Modal podglądu wyników sondy -->
+    <div class="modal" id="poll-results-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('poll-results-modal')">&times;</span>
+            <h2>Wyniki sondy</h2>
+            <div id="poll-results-content"></div>
+        </div>
+    </div>
+
     <div class="modal" id="login-modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('login-modal')">&times;</span>
@@ -1088,6 +1165,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div class="form-group">
                     <label>Kategoria</label>
                     <input type="text" id="edit-art-category" required>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="edit-art-updated" style="width: auto;">
+                    <label for="edit-art-updated" style="margin-bottom: 0; cursor: pointer;">Oznacz jako Aktualizacja</label>
                 </div>
                 <div class="form-group">
                     <label>Główny URL zdjęcia</label>
@@ -1153,7 +1234,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>&copy; <span id="current-year">2026</span> NowinyInfo. Wszelkie prawa zastrzeżone. Niezależny portal informacyjny.</p>
     </footer>
 
-    <!-- Baner plików cookies -->
     <div id="cookie-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--portal-dark); color: #fff; padding: 15px 20px; z-index: 3000; box-shadow: 0 -4px 15px rgba(0,0,0,0.2); border-top: 4px solid var(--portal-primary);">
         <div style="max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <p style="font-size: 13px; margin: 0; color: #d1d5db; flex: 1; line-height: 1.5;">
@@ -1182,7 +1262,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         document.getElementById('current-year').innerText = new Date().getFullYear();
 
-        // Funkcja wyświetlająca powiadomienie typu Toast od góry ekranu
         window.showNotification = function(message) {
             const toast = document.getElementById('toast-notification');
             toast.innerText = message;
@@ -1192,7 +1271,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }, 3200);
         }
 
-        // Obsługa ciemnego motyvu
         window.toggleDarkMode = function() {
             document.body.classList.toggle('dark-theme');
             localStorage.setItem('portal_dark_mode', document.body.classList.contains('dark-theme'));
@@ -1202,7 +1280,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             document.body.classList.add('dark-theme');
         }
 
-        // Pomocnik zaawansowanego edytora treści
         window.formatText = function(textareaId, startTag, endTag) {
             const textarea = document.getElementById(textareaId);
             const start = textarea.selectionStart;
@@ -1214,7 +1291,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             textarea.setSelectionRange(start + startTag.length, end + startTag.length);
         }
 
-        // Pomocnik konwersji linków YouTube na wersję embed
         function formatVideoEmbed(url) {
             if (!url) return '';
             let embedUrl = url.trim();
@@ -1226,7 +1302,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             return embedUrl;
         }
 
-        // Obsługa banera cookies
         function checkCookieConsent() {
             if (!localStorage.getItem('portal_cookie_consent')) {
                 document.getElementById('cookie-banner').style.display = 'block';
@@ -1241,6 +1316,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         let currentCategory = 'all';
         let allArticlesCache = [];
         let currentActiveArticleId = null;
+        let currentHomeViewMode = 'grid';
 
         let currentLat = 50.0413;
         let currentLon = 22.0047;
@@ -1254,58 +1330,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
 
         window.switchEditorTab = function(tabName) {
-            const addSec = document.getElementById('editor-section-add');
-            const manageSec = document.getElementById('editor-section-manage');
-            const breakingSec = document.getElementById('editor-section-breaking');
-            const pollSec = document.getElementById('editor-section-poll');
-            const profileSec = document.getElementById('editor-section-profile');
-            const reportsSec = document.getElementById('editor-section-reports');
-            
-            const btnAdd = document.getElementById('btn-tab-add');
-            const btnManage = document.getElementById('btn-tab-manage');
-            const btnBreaking = document.getElementById('btn-tab-breaking');
-            const btnPoll = document.getElementById('btn-tab-poll');
-            const btnProfile = document.getElementById('btn-tab-profile');
-            const btnReports = document.getElementById('btn-tab-reports');
+            const sections = ['add', 'manage', 'breaking', 'poll', 'view', 'profile', 'reports'];
+            sections.forEach(sec => {
+                const el = document.getElementById(`editor-section-${sec}`);
+                const btn = document.getElementById(`btn-tab-${sec}`);
+                if (el) el.style.display = 'none';
+                if (btn) btn.classList.remove('active');
+            });
 
-            if(addSec) addSec.style.display = 'none';
-            if(manageSec) manageSec.style.display = 'none';
-            if(breakingSec) breakingSec.style.display = 'none';
-            if(pollSec) pollSec.style.display = 'none';
-            if(profileSec) profileSec.style.display = 'none';
-            if(reportsSec) reportsSec.style.display = 'none';
+            const activeSec = document.getElementById(`editor-section-${tabName}`);
+            const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+            if (activeSec) activeSec.style.display = 'block';
+            if (activeBtn) activeBtn.classList.add('active');
 
-            if(btnAdd) btnAdd.classList.remove('active');
-            if(btnManage) btnManage.classList.remove('active');
-            if(btnBreaking) btnBreaking.classList.remove('active');
-            if(btnPoll) btnPoll.classList.remove('active');
-            if(btnProfile) btnProfile.classList.remove('active');
-            if(btnReports) btnReports.classList.remove('active');
-
-            if (tabName === 'add') {
-                if(addSec) addSec.style.display = 'block';
-                if(btnAdd) btnAdd.classList.add('active');
-            } else if (tabName === 'manage') {
-                if(manageSec) manageSec.style.display = 'block';
-                if(btnManage) btnManage.classList.add('active');
-                renderEditorManageList();
-            } else if (tabName === 'breaking') {
-                if(breakingSec) breakingSec.style.display = 'block';
-                if(btnBreaking) btnBreaking.classList.add('active');
-            } else if (tabName === 'poll') {
-                if(pollSec) pollSec.style.display = 'block';
-                if(btnPoll) btnPoll.classList.add('active');
-            } else if (tabName === 'profile') {
-                if(profileSec) profileSec.style.display = 'block';
-                if(btnProfile) btnProfile.classList.add('active');
+            if (tabName === 'manage') renderEditorManageList();
+            if (tabName === 'poll') fetchAndRenderEditorPolls();
+            if (tabName === 'reports') fetchAndRenderReports();
+            if (tabName === 'view') {
+                const sel = document.getElementById('home-view-mode-select');
+                if (sel) sel.value = currentHomeViewMode;
+            }
+            if (tabName === 'profile') {
                 const currentFullName = localStorage.getItem('portal_user_fullname');
                 if(document.getElementById('profile-fullname')) {
                     document.getElementById('profile-fullname').value = currentFullName || '';
                 }
-            } else if (tabName === 'reports') {
-                if(reportsSec) reportsSec.style.display = 'block';
-                if(btnReports) btnReports.classList.add('active');
-                fetchAndRenderReports();
             }
         }
 
@@ -1346,6 +1395,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 showNotification("Nie udało się zaktualizować profilu.");
             }
         });
+
+        async function fetchHomeViewMode() {
+            try {
+                const docSnap = await getDoc(doc(db, "settings", "portalSettings"));
+                if (docSnap.exists() && docSnap.data().homeView) {
+                    currentHomeViewMode = docSnap.data().homeView;
+                } else {
+                    currentHomeViewMode = 'grid';
+                }
+                applyHomeViewMode();
+            } catch(e) {
+                console.error("Błąd pobierania widoku strony:", e);
+            }
+        }
+
+        window.saveHomeViewMode = async function() {
+            const mode = document.getElementById('home-view-mode-select').value;
+            try {
+                await setDoc(doc(db, "settings", "portalSettings"), { homeView: mode }, { merge: true });
+                currentHomeViewMode = mode;
+                applyHomeViewMode();
+                renderArticles();
+                showNotification("Zapisano nowy widok strony głównej!");
+            } catch(e) {
+                console.error("Błąd zapisu widoku:", e);
+                showNotification("Nie udało się zapisać widoku.");
+            }
+        }
+
+        function applyHomeViewMode() {
+            const container = document.getElementById('news-container');
+            if (!container) return;
+            container.classList.remove('grid-view', 'list-view');
+            if (currentHomeViewMode === 'list') {
+                container.classList.add('list-view');
+            } else {
+                container.classList.add('grid-view');
+            }
+        }
 
         async function fetchBreakingNews() {
             const bar = document.getElementById('breaking-news-bar');
@@ -1391,38 +1479,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
         }
 
-        // Obsługa sondy redakcyjnej
-        let currentPollData = null;
+        let currentActivePollData = null;
+        let allPollsCache = [];
 
-        async function fetchActivePoll() {
+        async function fetchActivePollForVisitors() {
             const pollWidget = document.getElementById('poll-widget-content');
             try {
-                const pollDoc = await getDoc(doc(db, "settings", "activePoll"));
-                if (!pollDoc.exists() || !pollDoc.data().question) {
+                const snapshot = await getDocs(collection(db, "polls"));
+                let activePoll = null;
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.status === 'active') {
+                        activePoll = { id: docSnap.id, ...data };
+                    }
+                });
+
+                if (!activePoll) {
                     pollWidget.innerHTML = `<div style="font-size: 13px; color: var(--portal-gray);">Brak aktywnej sondy.</div>`;
+                    currentActivePollData = null;
                     return;
                 }
 
-                currentPollData = pollDoc.data();
+                currentActivePollData = activePoll;
                 renderPollWidget();
             } catch (err) {
-                console.error("Błąd ładowania sondy:", err);
+                console.error("Błąd ładowania sondy dla odwiedzających:", err);
                 pollWidget.innerHTML = `<div style="font-size: 13px; color: var(--portal-primary);">Nie udało się załadować sondy.</div>`;
             }
         }
 
         function renderPollWidget() {
             const pollWidget = document.getElementById('poll-widget-content');
-            if (!currentPollData) return;
+            if (!currentActivePollData) return;
 
-            const pollId = currentPollData.id || "default_poll";
+            const pollId = currentActivePollData.id;
             const hasVoted = localStorage.getItem(`portal_voted_poll_${pollId}`) === 'true';
 
-            let html = `<div style="font-size: 13px; font-weight: bold; color: var(--portal-dark); margin-bottom: 12px; line-height: 1.3;">${currentPollData.question}</div>`;
+            let html = `<div style="font-size: 13px; font-weight: bold; color: var(--portal-dark); margin-bottom: 12px; line-height: 1.3;">${currentActivePollData.question}</div>`;
 
             if (!hasVoted) {
                 html += `<form id="poll-vote-form" onsubmit="submitPollVote(event)"><div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">`;
-                currentPollData.options.forEach((opt, idx) => {
+                currentActivePollData.options.forEach((opt, idx) => {
                     html += `
                         <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="radio" name="poll-option" value="${idx}" required style="accent-color: var(--portal-primary);">
@@ -1432,9 +1529,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 });
                 html += `</div><button type="submit" class="btn" style="width: 100%; padding: 6px; font-size: 12px;">Zagłosuj</button></form>`;
             } else {
-                const totalVotes = currentPollData.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+                const totalVotes = currentActivePollData.options.reduce((sum, o) => sum + (o.votes || 0), 0);
                 html += `<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">`;
-                currentPollData.options.forEach(opt => {
+                currentActivePollData.options.forEach(opt => {
                     const votes = opt.votes || 0;
                     const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
                     html += `
@@ -1457,18 +1554,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         window.submitPollVote = async function(e) {
             e.preventDefault();
-            if (!currentPollData) return;
+            if (!currentActivePollData) return;
 
             const selected = document.querySelector('input[name="poll-option"]:checked');
             if (!selected) return;
 
             const optIndex = parseInt(selected.value);
-            const pollId = currentPollData.id || "default_poll";
+            const pollId = currentActivePollData.id;
 
-            currentPollData.options[optIndex].votes = (currentPollData.options[optIndex].votes || 0) + 1;
+            currentActivePollData.options[optIndex].votes = (currentActivePollData.options[optIndex].votes || 0) + 1;
 
             try {
-                await setDoc(doc(db, "settings", "activePoll"), currentPollData);
+                await updateDoc(doc(db, "polls", pollId), { options: currentActivePollData.options });
                 localStorage.setItem(`portal_voted_poll_${pollId}`, 'true');
                 renderPollWidget();
                 showNotification("Głos został oddany pomyślnie!");
@@ -1478,8 +1575,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             }
         }
 
+        async function fetchAndRenderEditorPolls() {
+            const listContainer = document.getElementById('editor-polls-list');
+            if (!listContainer) return;
+
+            listContainer.innerHTML = 'Ładowanie sond...';
+            try {
+                const snapshot = await getDocs(collection(db, "polls"));
+                allPollsCache = [];
+                snapshot.forEach(docSnap => {
+                    allPollsCache.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if (allPollsCache.length === 0) {
+                    listContainer.innerHTML = `<p style="font-size: 13px; color: var(--portal-gray);">Brak sond w bazie.</p>`;
+                    return;
+                }
+
+                listContainer.innerHTML = '';
+                allPollsCache.forEach(poll => {
+                    const isActive = poll.status === 'active';
+                    const statusBadge = isActive ? `<span style="color: #10b981; font-weight: bold;">Aktywna</span>` : `<span style="color: #ef4444; font-weight: bold;">Zamknięta (ukryta)</span>`;
+                    
+                    const item = document.createElement('div');
+                    item.style.cssText = "background: var(--portal-bg); border: 1px solid var(--portal-border); padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;";
+                    item.innerHTML = `
+                        <div style="overflow: hidden;">
+                            <div style="font-size: 12px; font-weight: bold; color: var(--portal-primary);">Status: ${statusBadge}</div>
+                            <div style="font-size: 14px; font-weight: 600; color: var(--portal-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">${poll.question}</div>
+                        </div>
+                        <div style="display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap;">
+                            <button class="btn" style="padding: 5px 10px; font-size: 11px; background: var(--msn-blue);" onclick="viewPollResults('${poll.id}')">Wyniki</button>
+                            <button class="btn btn-warning" style="padding: 5px 10px; font-size: 11px;" onclick="startEditPoll('${poll.id}')">Edytuj</button>
+                            ${isActive ? `<button class="btn btn-warning" style="padding: 5px 10px; font-size: 11px; background: #6b7280;" onclick="toggleClosePoll('${poll.id}', 'closed')">Zamknij</button>` : `<button class="btn" style="padding: 5px 10px; font-size: 11px; background: #10b981;" onclick="toggleClosePoll('${poll.id}', 'active')">Aktywuj</button>`}
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;" onclick="deletePoll('${poll.id}')">Usuń</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            } catch (err) {
+                console.error("Błąd pobierania sond:", err);
+                listContainer.innerHTML = `<p style="font-size: 13px; color: var(--portal-primary);">Błąd ładowania sond.</p>`;
+            }
+        }
+
         document.getElementById('editor-poll-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const pollId = document.getElementById('edit-poll-id').value;
             const question = document.getElementById('edit-poll-question').value.trim();
             const opt1Text = document.getElementById('edit-poll-opt1').value.trim();
             const opt2Text = document.getElementById('edit-poll-opt2').value.trim();
@@ -1489,29 +1631,122 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 { text: opt1Text, votes: 0 },
                 { text: opt2Text, votes: 0 }
             ];
-            if (opt3Text) {
-                options.push({ text: opt3Text, votes: 0 });
-            }
-
-            const pollId = "poll_" + Date.now();
-            const newPoll = {
-                id: pollId,
-                question,
-                options
-            };
+            if (opt3Text) options.push({ text: opt3Text, votes: 0 });
 
             try {
-                await setDoc(doc(db, "settings", "activePoll"), newPoll);
-                localStorage.removeItem(`portal_voted_poll_${currentPollData?.id || ''}`);
-                currentPollData = newPoll;
-                renderPollWidget();
-                showNotification("Nowa sonda została opublikowana!");
-                document.getElementById('editor-poll-form').reset();
+                if (pollId) {
+                    const existing = allPollsCache.find(p => p.id === pollId);
+                    if (existing) {
+                        options.forEach((opt, i) => {
+                            if (existing.options[i]) opt.votes = existing.options[i].votes || 0;
+                        });
+                    }
+                    await updateDoc(doc(db, "polls", pollId), { question, options });
+                    showNotification("Sonda została zaktualizowana!");
+                } else {
+                    const batchPromises = allPollsCache.filter(p => p.status === 'active').map(p => updateDoc(doc(db, "polls", p.id), { status: 'closed' }));
+                    await Promise.all(batchPromises);
+
+                    await addDoc(collection(db, "polls"), {
+                        question,
+                        options,
+                        status: 'active',
+                        createdAt: Date.now()
+                    });
+                    showNotification("Nowa sonda została opublikowana i aktywowana!");
+                }
+
+                resetPollForm();
+                fetchAndRenderEditorPolls();
+                fetchActivePollForVisitors();
             } catch (err) {
-                console.error("Błąd publikacji sondy:", err);
-                showNotification("Nie udało się opublikować sondy.");
+                console.error("Błąd zapisu sondy:", err);
+                showNotification("Nie udało się zapisać sondy.");
             }
         });
+
+        window.startEditPoll = function(pollId) {
+            const poll = allPollsCache.find(p => p.id === pollId);
+            if (!poll) return;
+
+            document.getElementById('edit-poll-id').value = poll.id;
+            document.getElementById('edit-poll-question').value = poll.question;
+            document.getElementById('edit-poll-opt1').value = poll.options[0]?.text || '';
+            document.getElementById('edit-poll-opt2').value = poll.options[1]?.text || '';
+            document.getElementById('edit-poll-opt3').value = poll.options[2]?.text || '';
+
+            document.getElementById('poll-form-title').innerText = "Edytuj sondę";
+            document.getElementById('poll-submit-btn').innerText = "Zapisz zmiany";
+            document.getElementById('poll-cancel-btn').style.display = 'inline-block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.resetPollForm = function() {
+            document.getElementById('editor-poll-form').reset();
+            document.getElementById('edit-poll-id').value = '';
+            document.getElementById('poll-form-title').innerText = "Dodaj nową sondę";
+            document.getElementById('poll-submit-btn').innerText = "Opublikuj nową sondę";
+            document.getElementById('poll-cancel-btn').style.display = 'none';
+        }
+
+        window.toggleClosePoll = async function(pollId, newStatus) {
+            try {
+                if (newStatus === 'active') {
+                    const batchPromises = allPollsCache.filter(p => p.status === 'active').map(p => updateDoc(doc(db, "polls", p.id), { status: 'closed' }));
+                    await Promise.all(batchPromises);
+                }
+                await updateDoc(doc(db, "polls", pollId), { status: newStatus });
+                showNotification(newStatus === 'active' ? "Sonda została aktywowana (widoczna dla czytelników)." : "Sonda została zamknięta i ukryta dla odwiedzających.");
+                fetchAndRenderEditorPolls();
+                fetchActivePollForVisitors();
+            } catch (err) {
+                console.error("Błąd zmiany statusu sondy:", err);
+                showNotification("Nie udało się zmienić statusu sondy.");
+            }
+        }
+
+        window.deletePoll = async function(pollId) {
+            if (!confirm("Czy na pewno chcesz trwale usunąć tę sondę?")) return;
+            try {
+                await deleteDoc(doc(db, "polls", pollId));
+                showNotification("Sonda została usunięta.");
+                fetchAndRenderEditorPolls();
+                fetchActivePollForVisitors();
+            } catch (err) {
+                console.error("Błąd usuwania sondy:", err);
+                showNotification("Nie udało się usunąć sondy.");
+            }
+        }
+
+        window.viewPollResults = function(pollId) {
+            const poll = allPollsCache.find(p => p.id === pollId);
+            if (!poll) return;
+
+            const resultsContent = document.getElementById('poll-results-content');
+            const totalVotes = poll.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+
+            let html = `<div style="font-size: 15px; font-weight: bold; color: var(--portal-dark); margin-bottom: 15px;">${poll.question}</div>`;
+            html += `<div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">`;
+            poll.options.forEach(opt => {
+                const votes = opt.votes || 0;
+                const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                html += `
+                    <div>
+                        <div style="font-size: 13px; display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span><b>${opt.text}</b></span>
+                            <span>${percent}% (${votes} głosów)</span>
+                        </div>
+                        <div style="background: var(--portal-border); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--portal-primary); width: ${percent}%; height: 100%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div><div style="font-size: 12px; color: var(--portal-gray); text-align: right;">Łącznie oddanych głosów: <b>${totalVotes}</b></div>`;
+
+            resultsContent.innerHTML = html;
+            openModal('poll-results-modal');
+        }
 
         async function fetchAndRenderReports() {
             const reportsContainer = document.getElementById('editor-reports-list');
@@ -1628,7 +1863,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 }
 
                 const isNewest = (index === 0);
-                const badgeHTML = isNewest ? `<span style="background: var(--portal-primary); color: white; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-right: 8px;">Najnowszy</span>` : '';
+                const isUpdated = article.isUpdated;
+                const newestBadgeHTML = isNewest ? `<span style="background: var(--portal-primary); color: white; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-right: 8px;">Najnowszy</span>` : '';
+                const updateBadgeHTML = isUpdated ? `<span style="background: var(--portal-dark); color: white; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-right: 8px;">Aktualizacja</span>` : '';
+                const badgeHTML = newestBadgeHTML + updateBadgeHTML;
 
                 const articleEl = document.createElement('div');
                 articleEl.className = 'main-article';
@@ -1638,14 +1876,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                 articleEl.innerHTML = `
                     <img src="${article.imageUrl}" alt="${article.title}">
-                    <div class="article-meta">
-                        <span>${badgeHTML} Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • ${article.date}</span>
-                        <span>👁️ ${article.views || 0}</span>
+                    <div>
+                        <div class="article-meta">
+                            <span>${badgeHTML} Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • ${article.date}</span>
+                            <span>👁️ ${article.views || 0}</span>
+                        </div>
+                        <h2 onclick="showDetailsView('${article.id}')">${article.title}</h2>
+                        <p>${article.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
+                        <button class="btn" onclick="showDetailsView('${article.id}')">Czytaj dalej</button>
+                        ${actionButtonsHTML}
                     </div>
-                    <h2 onclick="showDetailsView('${article.id}')">${article.title}</h2>
-                    <p>${article.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
-                    <button class="btn" onclick="showDetailsView('${article.id}')">Czytaj dalej</button>
-                    ${actionButtonsHTML}
                 `;
                 newsContainer.appendChild(articleEl);
             });
@@ -1885,7 +2125,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     `;
                 }
 
-                // Generowanie sekcji galerii zdjęć jeśli istnieją
                 let galleryHTML = '';
                 if (article.gallery && Array.isArray(article.gallery) && article.gallery.length > 0) {
                     let imagesItems = '';
@@ -1904,7 +2143,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     }
                 }
 
-                // Generowanie sekcji wideo jeśli istnieje
                 let videoHTML = '';
                 if (article.videoUrl && article.videoUrl.trim() !== '') {
                     const embedUrl = formatVideoEmbed(article.videoUrl);
@@ -2021,6 +2259,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         function renderArticles() {
             const newsContainer = document.getElementById('news-container');
             newsContainer.innerHTML = '';
+            applyHomeViewMode();
 
             let filtered = allArticlesCache;
             if (currentCategory !== 'all') {
@@ -2048,24 +2287,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 }
 
                 const isNewest = (index === 0);
-                const badgeHTML = isNewest ? `<span style="background: var(--portal-primary); color: white; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-right: 8px;">Najnowszy</span>` : '';
+                const isUpdated = article.isUpdated;
+                const newestBadgeHTML = isNewest ? `<span style="background: var(--portal-primary); color: white; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-right: 8px;">Najnowszy</span>` : '';
+                const updateBadgeHTML = isUpdated ? `<span style="background: var(--portal-dark); color: white; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-right: 8px;">Aktualizacja</span>` : '';
+                const badgeHTML = newestBadgeHTML + updateBadgeHTML;
 
                 const articleEl = document.createElement('div');
                 articleEl.className = 'main-article';
-                if (isNewest) {
+                if (isNewest && currentHomeViewMode === 'grid') {
                     articleEl.style.borderLeft = "4px solid var(--portal-primary)";
                 }
 
                 articleEl.innerHTML = `
                     <img src="${article.imageUrl}" alt="${article.title}">
-                    <div class="article-meta">
-                        <span>${badgeHTML} Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • ${article.date}</span>
-                        <span>👁️ ${article.views || 0}</span>
+                    <div>
+                        <div class="article-meta">
+                            <span>${badgeHTML} Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • ${article.date}</span>
+                            <span>👁️ ${article.views || 0}</span>
+                        </div>
+                        <h2 onclick="showDetailsView('${article.id}')">${article.title}</h2>
+                        <p>${article.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
+                        <button class="btn" onclick="showDetailsView('${article.id}')">Czytaj dalej</button>
+                        ${actionButtonsHTML}
                     </div>
-                    <h2 onclick="showDetailsView('${article.id}')">${article.title}</h2>
-                    <p>${article.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}...</p>
-                    <button class="btn" onclick="showDetailsView('${article.id}')">Czytaj dalej</button>
-                    ${actionButtonsHTML}
                 `;
                 newsContainer.appendChild(articleEl);
             });
@@ -2131,6 +2375,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             document.getElementById('edit-art-id').value = article.id;
             document.getElementById('edit-art-title').value = article.title;
             document.getElementById('edit-art-category').value = article.category;
+            document.getElementById('edit-art-updated').checked = !!article.isUpdated;
             document.getElementById('edit-art-image').value = article.imageUrl;
             document.getElementById('edit-art-gallery').value = article.gallery ? article.gallery.join('\n') : '';
             document.getElementById('edit-art-video').value = article.videoUrl || '';
@@ -2139,11 +2384,57 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             openModal('edit-modal');
         }
 
+        document.getElementById('add-article-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentUser = localStorage.getItem('portal_user');
+            const currentFullName = localStorage.getItem('portal_user_fullname');
+            if (!currentUser) {
+                showNotification("Musisz być zalogowany, aby dodać artykuł.");
+                return;
+            }
+
+            const title = document.getElementById('art-title').value;
+            const category = document.getElementById('art-category').value.trim();
+            const isUpdated = document.getElementById('art-updated').checked;
+            const imageUrl = document.getElementById('art-image').value;
+            const galleryRaw = document.getElementById('art-gallery').value;
+            const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const videoUrl = document.getElementById('art-video').value.trim();
+            const content = document.getElementById('art-content').value;
+            const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            try {
+                await addDoc(collection(db, "articles"), {
+                    title,
+                    category,
+                    isUpdated,
+                    imageUrl,
+                    gallery,
+                    videoUrl,
+                    content,
+                    author: currentUser,
+                    authorFullName: currentFullName || currentUser,
+                    date,
+                    createdAt: Date.now(),
+                    views: 0,
+                    reactions: { like: 0, heart: 0, wow: 0 }
+                });
+
+                showNotification("Artykuł został opublikowany!");
+                document.getElementById('add-article-form').reset();
+                fetchArticles();
+            } catch (error) {
+                console.error("Błąd dodawania artykułu:", error);
+                showNotification("Nie udało się opublikować artykułu.");
+            }
+        });
+
         document.getElementById('edit-article-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const articleId = document.getElementById('edit-art-id').value;
             const title = document.getElementById('edit-art-title').value;
             const category = document.getElementById('edit-art-category').value.trim();
+            const isUpdated = document.getElementById('edit-art-updated').checked;
             const imageUrl = document.getElementById('edit-art-image').value;
             const galleryRaw = document.getElementById('edit-art-gallery').value;
             const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
@@ -2152,10 +2443,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             try {
                 const articleRef = doc(db, "articles", articleId);
-                await updateDoc(articleRef, { title, category, imageUrl, gallery, videoUrl, content });
+                await updateDoc(articleRef, { title, category, isUpdated, imageUrl, gallery, videoUrl, content });
 
                 showNotification("Artykuł zaktualizowany pomyślnie!");
-                closeModal('edit-modal');
+                    closeModal('edit-modal');
                 fetchArticles();
                 if (currentActiveArticleId === articleId) {
                     showDetailsView(articleId);
@@ -2182,31 +2473,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 commentsList.innerHTML = '';
                 commentsSnapshot.forEach((docSnap) => {
                     const comment = docSnap.data();
-                    let actionButton = '';
-                    
+                    let deleteBtnHTML = '';
                     if (currentUser) {
-                        actionButton = `<button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="deleteComment('${articleId}', '${docSnap.id}')">Usuń</button>`;
-                    } else {
-                        actionButton = `<button class="btn btn-warning" style="padding: 4px 8px; font-size: 11px;" onclick="openReportModal('${articleId}', '${docSnap.id}')">Zgłoś</button>`;
+                        deleteBtnHTML = `<button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px; margin-left: 10px;" onclick="deleteComment('${articleId}', '${docSnap.id}')">Usuń</button>`;
                     }
 
                     const commentEl = document.createElement('div');
                     commentEl.className = 'comment-item';
                     commentEl.innerHTML = `
                         <div class="comment-header">
-                            <span class="comment-author">${comment.author}</span>
-                            <span>${comment.date}</span>
+                            <div>
+                                <span class="comment-author">${comment.author}</span> • <span style="font-size: 11px;">${comment.date}</span>
+                            </div>
+                            <div>
+                                <span style="color: var(--portal-primary); cursor: pointer; text-decoration: underline;" onclick="openReportModal('${articleId}', '${docSnap.id}')">Zgłoś</span>
+                                ${deleteBtnHTML}
+                            </div>
                         </div>
-                        <div style="font-size: 13px; margin-bottom: 10px; white-space: pre-wrap;">${comment.text}</div>
-                        <div style="display: flex; justify-content: flex-end;">
-                            ${actionButton}
-                        </div>
+                        <div style="font-size: 14px; color: #374151; white-space: pre-wrap;">${comment.text}</div>
                     `;
                     commentsList.appendChild(commentEl);
                 });
             } catch (error) {
                 console.error("Błąd ładowania komentarzy:", error);
-                commentsList.innerHTML = `<p style="font-size: 13px; color: var(--portal-primary);">Nie udało się załadować komentarzy.</p>`;
+                commentsList.innerHTML = `<p style="font-size: 13px; color: var(--portal-primary);">Błąd ładowania komentarzy.</p>`;
             }
         }
 
@@ -2214,8 +2504,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             if (!confirm("Czy na pewno chcesz usunąć ten komentarz?")) return;
             try {
                 await deleteDoc(doc(db, "articles", articleId, "comments", commentId));
-                loadComments(articleId);
                 showNotification("Komentarz został usunięty.");
+                loadComments(articleId);
             } catch (error) {
                 console.error("Błąd usuwania komentarza:", error);
                 showNotification("Nie udało się usunąć komentarza.");
@@ -2231,147 +2521,93 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
             try {
-                await addDoc(collection(db, "articles", currentActiveArticleId, "comments"), { author, text, date });
-                document.getElementById('comment-text').value = '';
+                await addDoc(collection(db, "articles", currentActiveArticleId, "comments"), {
+                    author,
+                    text,
+                    date,
+                    createdAt: Date.now()
+                });
+                showNotification("Komentarz został dodany!");
+                document.getElementById('add-comment-form').reset();
                 loadComments(currentActiveArticleId);
-                showNotification("Komentarz został dodany pomyślnie.");
             } catch (error) {
                 console.error("Błąd dodawania komentarza:", error);
                 showNotification("Nie udało się dodać komentarza.");
             }
         });
 
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
+            if (user && pass) {
+                localStorage.setItem('portal_user', user);
+                if (!localStorage.getItem('portal_user_fullname')) {
+                    localStorage.setItem('portal_user_fullname', user);
+                }
+                checkAuthSession();
+                closeModal('login-modal');
+                renderArticles();
+                if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
+                showNotification("Zalogowano pomyślnie jako " + user);
+            } else {
+                showNotification("Wprowadź poprawne dane logowania.");
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullname = document.getElementById('reg-fullname').value.trim();
+            const user = document.getElementById('reg-user').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+
+            if (fullname && user && pass) {
+                try {
+                    await setDoc(doc(db, "users", user), { fullName: fullname, username: user });
+                    localStorage.setItem('portal_user', user);
+                    localStorage.setItem('portal_user_fullname', fullname);
+                    checkAuthSession();
+                    closeModal('register-modal');
+                    renderArticles();
+                    if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
+                    showNotification("Zarejestrowano i zalogowano pomyślnie!");
+                } catch(err) {
+                    console.error("Błąd rejestracji:", err);
+                    showNotification("Błąd podczas rejestracji użytkownika.");
+                }
+            }
+        });
+
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const view = link.getAttribute('data-view');
-                const category = link.getAttribute('data-category');
-
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+                const category = e.target.getAttribute('data-category');
+                const view = e.target.getAttribute('data-view');
 
                 if (view === 'weather') {
                     showWeatherView();
-                } else {
+                    return;
+                }
+
+                if (category) {
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentCategory = category;
                     showHomeView();
-                    currentCategory = category || 'all';
                     renderArticles();
                 }
             });
         });
 
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullName = document.getElementById('reg-fullname').value.trim();
-            const username = document.getElementById('reg-user').value.trim();
-            const password = document.getElementById('reg-pass').value;
-
-            try {
-                const userDocRef = doc(db, "users", username);
-                const userSnapshot = await getDoc(userDocRef);
-
-                if (userSnapshot.exists()) {
-                    showNotification("Taki użytkownik już istnieje! Wybierz inny login.");
-                    return;
-                }
-
-                await setDoc(userDocRef, { fullName, username, password, role: "editor" });
-
-                showNotification("Rejestracja zakończona sukcesem! Możesz się teraz zalogować.");
-                closeModal('register-modal');
-                document.getElementById('register-form').reset();
-            } catch (error) {
-                console.error("Błąd rejestracji:", error);
-                showNotification("Wystąpił błąd podczas rejestracji.");
-            }
-        });
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('login-user').value.trim();
-            const password = document.getElementById('login-pass').value;
-
-            try {
-                const userDocRef = doc(db, "users", username);
-                const userSnapshot = await getDoc(userDocRef);
-
-                if (!userSnapshot.exists()) {
-                    showNotification("Nie znaleziono takiego użytkownika.");
-                    return;
-                }
-
-                const userData = userSnapshot.data();
-
-                if (userData.password === password) {
-                    localStorage.setItem('portal_user', username);
-                    localStorage.setItem('portal_user_fullname', userData.fullName || username);
-                    showNotification("Zalogowano pomyślnie!");
-                    closeModal('login-modal');
-                    document.getElementById('login-form').reset();
-                    checkAuthSession();
-                    renderArticles();
-                    renderEditorManageList();
-                } else {
-                    showNotification("Nieprawidłowe hasło.");
-                }
-            } catch (error) {
-                console.error("Błąd logowania:", error);
-                showNotification("Wystąpił błąd podczas logowania.");
-            }
-        });
-
-        document.getElementById('add-article-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const currentUser = localStorage.getItem('portal_user');
-            const currentFullName = localStorage.getItem('portal_user_fullname');
-            
-            if (!currentUser) {
-                showNotification("Musisz być zalogowany, aby dodać artykuł.");
-                return;
-            }
-
-            const title = document.getElementById('art-title').value;
-            const category = document.getElementById('art-category').value.trim();
-            const imageUrl = document.getElementById('art-image').value;
-            const galleryRaw = document.getElementById('art-gallery').value;
-            const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-            const videoUrl = document.getElementById('art-video').value.trim();
-            const content = document.getElementById('art-content').value;
-            const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            const createdAt = Date.now();
-
-            try {
-                await addDoc(collection(db, "articles"), {
-                    title,
-                    category,
-                    imageUrl,
-                    gallery,
-                    videoUrl,
-                    content,
-                    authorUsername: currentUser,
-                    authorFullName: currentFullName || currentUser,
-                    date,
-                    createdAt,
-                    views: 0,
-                    reactions: { like: 0, heart: 0, wow: 0 }
-                });
-
-                showNotification("Artykuł został opublikowany!");
-                document.getElementById('add-article-form').reset();
-                fetchArticles();
-                switchEditorTab('manage');
-            } catch (error) {
-                console.error("Błąd dodawania artykułu:", error);
-                showNotification("Nie udało się opublikować artykułu.");
-            }
-        });
-
-        checkAuthSession();
-        fetchArticles();
-        fetchBreakingNews();
-        fetchMsnWeatherData();
-        fetchActivePoll();
-        checkCookieConsent();
+        window.onload = async () => {
+            checkCookieConsent();
+            checkAuthSession();
+            await fetchHomeViewMode();
+            await fetchBreakingNews();
+            await fetchActivePollForVisitors();
+            await fetchArticles();
+            fetchMsnWeatherData();
+        };
     </script>
 </body>
 </html>
