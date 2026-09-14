@@ -20,7 +20,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NowinyInfo - Regionalny Portal Informacyjny</title>
-    <meta name="description" content="NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.[cite: 16]">
+    <meta name="description" content="NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.">
   <meta name="author" content="NowinyInfo">
   <meta name="robots" content="index, follow"> 
   <meta name="keywords" content="portal informacyjny, nowiny lokalne">
@@ -1080,7 +1080,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <div class="widget">
                 <h3>O portalu</h3>
-                <p style="font-size: 13px; color: var(--portal-gray);">NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.[cite: 16]</p>
+                <p style="font-size: 13px; color: var(--portal-gray);">NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.</p>
             </div>
             
             <div class="widget">
@@ -2546,42 +2546,90 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             });
         });
 
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+// Poprawiona obsługa Rejestracji konta w bazie Firestore
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            
-            if (user && pass) {
-                localStorage.setItem('portal_user', user);
-                if (!localStorage.getItem('portal_user_fullname')) {
-                    localStorage.setItem('portal_user_fullname', user);
+            const fullName = document.getElementById('reg-fullname').value.trim();
+            const login = document.getElementById('reg-user').value.trim();
+            const password = document.getElementById('reg-pass').value.trim();
+
+            if (!fullName || !login || !password) {
+                showNotification("Wypełnij wszystkie pola formularza rejestracji.");
+                return;
+            }
+
+            try {
+                const userRef = doc(db, "users", login);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    showNotification("Użytkownik o takim loginie już istnieje w bazie.");
+                    return;
                 }
-                closeModal('login-modal');
+
+                // Zapis konta w bazie danych Firebase (kolekcja "users") z Imieniem i nazwiskiem
+                await setDoc(userRef, {
+                    login: login,
+                    fullName: fullName,
+                    password: password,
+                    createdAt: Date.now()
+                });
+
+                // Zapis sesji w pamięci przeglądarki z uwzględnieniem Imienia i nazwiska
+                localStorage.setItem('portal_user', login);
+                localStorage.setItem('portal_user_fullname', fullName);
+
                 checkAuthSession();
                 renderArticles();
-                if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
-                showNotification("Zalogowano pomyślnie jako " + user);
-            } else {
-                showNotification("Wprowadź login i hasło.");
+                closeModal('register-modal');
+                document.getElementById('register-form').reset();
+                showNotification("Konto zostało pomyślnie utworzone i zarejestrowane!");
+            } catch (error) {
+                console.error("Błąd podczas rejestracji:", error);
+                showNotification("Nie udało się zarejestrować konta w bazie.");
             }
         });
 
-        document.getElementById('register-form').addEventListener('submit', (e) => {
+        // Poprawiona obsługa Logowania z odczytem Imienia i nazwiska z bazy Firestore
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const fullname = document.getElementById('reg-fullname').value.trim();
-            const user = document.getElementById('reg-user').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
+            const login = document.getElementById('login-user').value.trim();
+            const password = document.getElementById('login-pass').value.trim();
 
-            if (fullname && user && pass) {
-                localStorage.setItem('portal_user', user);
-                localStorage.setItem('portal_user_fullname', fullname);
-                closeModal('register-modal');
+            if (!login || !password) {
+                showNotification("Wpisz login oraz hasło.");
+                return;
+            }
+
+            try {
+                const userRef = doc(db, "users", login);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    showNotification("Nie znaleziono takiego użytkownika w bazie danych.");
+                    return;
+                }
+
+                const userData = userSnap.data();
+                if (userData.password !== password) {
+                    showNotification("Nieprawidłowe hasło.");
+                    return;
+                }
+
+                // Odczyt Imienia i nazwiska z bazy danych (zamiast samej nazwy loginu)
+                const fullName = userData.fullName || login;
+
+                localStorage.setItem('portal_user', login);
+                localStorage.setItem('portal_user_fullname', fullName);
+
                 checkAuthSession();
                 renderArticles();
-                if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
-                showNotification("Zarejestrowano i zalogowano pomyślnie!");
-            } else {
-                showNotification("Wypełnij wszystkie pola rejestracji.");
+                closeModal('login-modal');
+                document.getElementById('login-form').reset();
+                showNotification(`Zalogowano pomyślnie jako: ${fullName}`);
+            } catch (error) {
+                console.error("Błąd podczas logowania:", error);
+                showNotification("Wystąpił błąd podczas logowania do bazy.");
             }
         });
 
