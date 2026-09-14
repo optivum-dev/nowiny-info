@@ -20,10 +20,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NowinyInfo - Regionalny Portal Informacyjny</title>
-    <meta name="description" content="NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.">
+    <meta name="description" content="NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.[cite: 16]">
   <meta name="author" content="NowinyInfo">
   <meta name="robots" content="index, follow"> 
-  <!-- Opcjonalnie (Google ignoruje keywords, ale niektóre starsze wyszukiwarki mogą z nich korzystać): -->
   <meta name="keywords" content="portal informacyjny, nowiny lokalne">
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
@@ -39,7 +38,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             --msn-blue: #0078d4;
         }
 
-        /* Motyw ciemny */
         body.dark-theme {
             --portal-bg: #111827;
             --portal-card: #1f2937;
@@ -328,7 +326,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             background: var(--portal-primary);
         }
 
-        /* Style widoku kafelkowego (domyślny) */
         #news-container.grid-view {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -346,7 +343,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             height: 180px;
         }
 
-        /* Style widoku listy */
         #news-container.list-view {
             display: flex;
             flex-direction: column;
@@ -1084,7 +1080,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <div class="widget">
                 <h3>O portalu</h3>
-                <p style="font-size: 13px; color: var(--portal-gray);">NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.</p>
+                <p style="font-size: 13px; color: var(--portal-gray);">NowinyInfo to niezależny regionalny serwis informacyjny dostarczający codzienne doniesienia i wiadomości sportowe oraz biznesowe.[cite: 16]</p>
             </div>
             
             <div class="widget">
@@ -2163,7 +2159,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                 detailContainer.innerHTML = `
                     <div class="article-meta">
-                        <span>Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • ${article.date}</span>
+                        <span>Kategoria: ${article.category} • Autor: <b>${article.authorFullName || 'Redakcja'}</b> • Opublikowano: ${article.date}</span>
                         <span>👁️ Wyświetleń: <b>${article.views || 0}</b></span>
                     </div>
                     <h1 style="color: var(--portal-dark); font-size: 26px; margin-bottom: 15px; line-height: 1.3;">${article.title}</h1>
@@ -2392,21 +2388,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         document.getElementById('add-article-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const currentUser = localStorage.getItem('portal_user');
-            const currentFullName = localStorage.getItem('portal_user_fullname');
-            if (!currentUser) {
-                showNotification("Musisz być zalogowany, aby dodać artykuł.");
-                return;
-            }
-
-            const title = document.getElementById('art-title').value;
+            const authorFullName = localStorage.getItem('portal_user_fullname') || currentUser || 'Redakcja';
+            
+            const title = document.getElementById('art-title').value.trim();
             const category = document.getElementById('art-category').value.trim();
             const isUpdated = document.getElementById('art-updated').checked;
-            const imageUrl = document.getElementById('art-image').value;
-            const galleryRaw = document.getElementById('art-gallery').value;
-            const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const imageUrl = document.getElementById('art-image').value.trim();
+            const galleryRaw = document.getElementById('art-gallery').value.trim();
+            const gallery = galleryRaw ? galleryRaw.split('\n').map(url => url.trim()).filter(Boolean) : [];
             const videoUrl = document.getElementById('art-video').value.trim();
-            const content = document.getElementById('art-content').value;
-            const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+            const content = document.getElementById('art-content').value.trim();
+            
+            const now = new Date();
+            const date = now.toLocaleDateString('pl-PL', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
 
             try {
                 await addDoc(collection(db, "articles"), {
@@ -2418,15 +2418,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     videoUrl,
                     content,
                     author: currentUser,
-                    authorFullName: currentFullName || currentUser,
+                    authorFullName,
                     date,
-                    createdAt: Date.now(),
+                    createdAt: now.getTime(),
                     views: 0,
                     reactions: { like: 0, heart: 0, wow: 0 }
                 });
-
-                showNotification("Artykuł został opublikowany!");
+                showNotification("Artykuł został pomyślnie opublikowany!");
                 document.getElementById('add-article-form').reset();
+                showHomeView();
                 fetchArticles();
             } catch (error) {
                 console.error("Błąd dodawania artykułu:", error);
@@ -2437,25 +2437,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         document.getElementById('edit-article-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const articleId = document.getElementById('edit-art-id').value;
-            const title = document.getElementById('edit-art-title').value;
+            const title = document.getElementById('edit-art-title').value.trim();
             const category = document.getElementById('edit-art-category').value.trim();
             const isUpdated = document.getElementById('edit-art-updated').checked;
-            const imageUrl = document.getElementById('edit-art-image').value;
-            const galleryRaw = document.getElementById('edit-art-gallery').value;
-            const gallery = galleryRaw ? galleryRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const imageUrl = document.getElementById('edit-art-image').value.trim();
+            const galleryRaw = document.getElementById('edit-art-gallery').value.trim();
+            const gallery = galleryRaw ? galleryRaw.split('\n').map(url => url.trim()).filter(Boolean) : [];
             const videoUrl = document.getElementById('edit-art-video').value.trim();
-            const content = document.getElementById('edit-art-content').value;
+            const content = document.getElementById('edit-art-content').value.trim();
 
             try {
-                const articleRef = doc(db, "articles", articleId);
-                await updateDoc(articleRef, { title, category, isUpdated, imageUrl, gallery, videoUrl, content });
-
-                showNotification("Artykuł zaktualizowany pomyślnie!");
-                    closeModal('edit-modal');
+                await updateDoc(doc(db, "articles", articleId), {
+                    title,
+                    category,
+                    isUpdated,
+                    imageUrl,
+                    gallery,
+                    videoUrl,
+                    content
+                });
+                showNotification("Artykuł został pomyślnie zaktualizowany!");
+                closeModal('edit-modal');
                 fetchArticles();
-                if (currentActiveArticleId === articleId) {
-                    showDetailsView(articleId);
-                }
             } catch (error) {
                 console.error("Błąd edycji artykułu:", error);
                 showNotification("Nie udało się zaktualizować artykułu.");
@@ -2465,55 +2468,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         async function loadComments(articleId) {
             const commentsList = document.getElementById('comments-list');
             commentsList.innerHTML = 'Ładowanie komentarzy...';
-            const currentUser = localStorage.getItem('portal_user');
 
             try {
-                const commentsSnapshot = await getDocs(collection(db, "articles", articleId, "comments"));
-                
-                if (commentsSnapshot.empty) {
-                    commentsList.innerHTML = `<p style="font-size: 13px; color: var(--portal-gray); font-style: italic;">Brak komentarzy. Bądź pierwszy!</p>`;
+                const querySnapshot = await getDocs(collection(db, "articles", articleId, "comments"));
+                if (querySnapshot.empty) {
+                    commentsList.innerHTML = `<p style="font-size: 13px; color: var(--portal-gray);">Brak komentarzy. Bądź pierwszy!</p>`;
                     return;
                 }
 
                 commentsList.innerHTML = '';
-                commentsSnapshot.forEach((docSnap) => {
-                    const comment = docSnap.data();
-                    let deleteBtnHTML = '';
-                    if (currentUser) {
-                        deleteBtnHTML = `<button class="btn btn-danger" style="padding: 2px 8px; font-size: 10px; margin-left: 10px;" onclick="deleteComment('${articleId}', '${docSnap.id}')">Usuń</button>`;
-                    }
+                const comments = [];
+                querySnapshot.forEach(docSnap => {
+                    comments.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                comments.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-                    const commentEl = document.createElement('div');
-                    commentEl.className = 'comment-item';
-                    commentEl.innerHTML = `
+                comments.forEach(comment => {
+                    const item = document.createElement('div');
+                    item.className = 'comment-item';
+                    item.innerHTML = `
                         <div class="comment-header">
-                            <div>
-                                <span class="comment-author">${comment.author}</span> • <span style="font-size: 11px;">${comment.date}</span>
-                            </div>
-                            <div>
-                                <span style="color: var(--portal-primary); cursor: pointer; text-decoration: underline;" onclick="openReportModal('${articleId}', '${docSnap.id}')">Zgłoś</span>
-                                ${deleteBtnHTML}
-                            </div>
+                            <span class="comment-author">${comment.author}</span>
+                            <span>${comment.date} <a style="color: #ef4444; margin-left: 8px; cursor: pointer; text-decoration: underline;" onclick="openReportModal('${articleId}', '${comment.id}')">Zgłoś</a></span>
                         </div>
-                        <div style="font-size: 14px; color: #374151; white-space: pre-wrap;">${comment.text}</div>
+                        <div style="font-size: 14px; color: var(--portal-text);">${comment.text}</div>
                     `;
-                    commentsList.appendChild(commentEl);
+                    commentsList.appendChild(item);
                 });
             } catch (error) {
                 console.error("Błąd ładowania komentarzy:", error);
-                commentsList.innerHTML = `<p style="font-size: 13px; color: var(--portal-primary);">Błąd ładowania komentarzy.</p>`;
-            }
-        }
-
-        window.deleteComment = async function(articleId, commentId) {
-            if (!confirm("Czy na pewno chcesz usunąć ten komentarz?")) return;
-            try {
-                await deleteDoc(doc(db, "articles", articleId, "comments", commentId));
-                showNotification("Komentarz został usunięty.");
-                loadComments(articleId);
-            } catch (error) {
-                console.error("Błąd usuwania komentarza:", error);
-                showNotification("Nie udało się usunąć komentarza.");
+                commentsList.innerHTML = `<p style="font-size: 13px; color: var(--portal-primary);">Nie udało się załadować komentarzy.</p>`;
             }
         }
 
@@ -2523,64 +2507,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             const author = document.getElementById('comment-author').value.trim();
             const text = document.getElementById('comment-text').value.trim();
-            const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const now = new Date();
+            const date = now.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
             try {
                 await addDoc(collection(db, "articles", currentActiveArticleId, "comments"), {
                     author,
                     text,
                     date,
-                    createdAt: Date.now()
+                    createdAt: now.getTime()
                 });
+                document.getElementById('comment-text').value = '';
                 showNotification("Komentarz został dodany!");
-                document.getElementById('add-comment-form').reset();
                 loadComments(currentActiveArticleId);
             } catch (error) {
                 console.error("Błąd dodawania komentarza:", error);
                 showNotification("Nie udało się dodać komentarza.");
-            }
-        });
-
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-
-            if (user && pass) {
-                localStorage.setItem('portal_user', user);
-                if (!localStorage.getItem('portal_user_fullname')) {
-                    localStorage.setItem('portal_user_fullname', user);
-                }
-                checkAuthSession();
-                closeModal('login-modal');
-                renderArticles();
-                if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
-                showNotification("Zalogowano pomyślnie jako " + user);
-            } else {
-                showNotification("Wprowadź poprawne dane logowania.");
-            }
-        });
-
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fullname = document.getElementById('reg-fullname').value.trim();
-            const user = document.getElementById('reg-user').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
-
-            if (fullname && user && pass) {
-                try {
-                    await setDoc(doc(db, "users", user), { fullName: fullname, username: user });
-                    localStorage.setItem('portal_user', user);
-                    localStorage.setItem('portal_user_fullname', fullname);
-                    checkAuthSession();
-                    closeModal('register-modal');
-                    renderArticles();
-                    if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
-                    showNotification("Zarejestrowano i zalogowano pomyślnie!");
-                } catch(err) {
-                    console.error("Błąd rejestracji:", err);
-                    showNotification("Błąd podczas rejestracji użytkownika.");
-                }
             }
         });
 
@@ -2604,15 +2546,52 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             });
         });
 
-        window.onload = async () => {
-            checkCookieConsent();
-            checkAuthSession();
-            await fetchHomeViewMode();
-            await fetchBreakingNews();
-            await fetchActivePollForVisitors();
-            await fetchArticles();
-            fetchMsnWeatherData();
-        };
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            
+            if (user && pass) {
+                localStorage.setItem('portal_user', user);
+                if (!localStorage.getItem('portal_user_fullname')) {
+                    localStorage.setItem('portal_user_fullname', user);
+                }
+                closeModal('login-modal');
+                checkAuthSession();
+                renderArticles();
+                if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
+                showNotification("Zalogowano pomyślnie jako " + user);
+            } else {
+                showNotification("Wprowadź login i hasło.");
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fullname = document.getElementById('reg-fullname').value.trim();
+            const user = document.getElementById('reg-user').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+
+            if (fullname && user && pass) {
+                localStorage.setItem('portal_user', user);
+                localStorage.setItem('portal_user_fullname', fullname);
+                closeModal('register-modal');
+                checkAuthSession();
+                renderArticles();
+                if(currentActiveArticleId) showDetailsView(currentActiveArticleId);
+                showNotification("Zarejestrowano i zalogowano pomyślnie!");
+            } else {
+                showNotification("Wypełnij wszystkie pola rejestracji.");
+            }
+        });
+
+        checkCookieConsent();
+        checkAuthSession();
+        fetchHomeViewMode();
+        fetchBreakingNews();
+        fetchActivePollForVisitors();
+        fetchMsnWeatherData();
+        fetchArticles();
     </script>
 </body>
 </html>
